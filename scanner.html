@@ -2,7 +2,8 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no"/>
+<meta name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no"/>
 
 <title>12織 AR 掃描</title>
 
@@ -19,7 +20,7 @@
     background:#000;
   }
 
-  /* 回到舊版：強制 MindAR video / canvas 撐滿畫面（讓鏡頭不會黑） */
+  /* 🔑 關鍵：強制 MindAR 的 video / canvas 撐滿螢幕，照舊版 index.html 寫法 */
   video, canvas, .a-canvas,
   .mindar-ui-overlay, .mindar-ui-scanning, .mindar-ui-loading {
     position:fixed !important;
@@ -32,7 +33,7 @@
     z-index:1;
   }
 
-  /* 上方標題欄 */
+  /* 上方標題列 */
   #header {
     position:fixed;
     left:0; top:0;
@@ -45,7 +46,10 @@
     justify-content:space-between;
     align-items:center;
   }
-  #header span { font-size:18px; font-weight:700; }
+  #header span {
+    font-size:18px;
+    font-weight:700;
+  }
   #backBtn {
     padding:8px 16px;
     border-radius:12px;
@@ -55,7 +59,7 @@
     font-size:14px;
   }
 
-  /* 掃描框（透明中間、白框） */
+  /* 中間白色掃描框（透明中間） */
   #scanFrame {
     position:fixed;
     inset:0;
@@ -68,11 +72,26 @@
   #scanFrame .box {
     width:min(75vw,420px);
     aspect-ratio:1/1;
-    border:4px solid white;
+    border:4px solid #ffffff;
     border-radius:22px;
   }
 
-  /* 隱藏 VR 按鈕 */
+  /* 「開始掃描」按鈕：給瀏覽器一個使用者手勢來啟動相機 */
+  #startBtn {
+    position:fixed;
+    left:50%; top:50%;
+    transform:translate(-50%, -50%);
+    z-index:11;
+    padding:12px 24px;
+    border-radius:999px;
+    border:0;
+    font-size:16px;
+    font-weight:700;
+    background:rgba(0,0,0,0.75);
+    color:#ffffff;
+  }
+
+  /* 隱藏 VR / AR 預設按鈕 */
   .a-enter-vr,
   .a-enter-ar,
   .a-enter-vr-button,
@@ -93,17 +112,48 @@
   <div class="box"></div>
 </div>
 
+<button id="startBtn">開始掃描</button>
+
 <a-scene id="scene"
-  mindar-image="imageTargetSrc: ./targets.mind; maxTrack:1;"
+  mindar-image="imageTargetSrc: ./targets.mind; maxTrack:1;
+                 filterMinCF:0.0001; filterBeta:0.05;
+                 missTolerance:10; warmupTolerance:5;
+                 uiScanning:no; uiLoading:no; uiError:no"
   embedded
   color-space="sRGB"
-  renderer="colorManagement:true; physicallyCorrectLights:true; alpha:true;"
+  renderer="colorManagement:true; physicallyCorrectLights:true; antialias:true; alpha:true;"
   vr-mode-ui="enabled:false"
-  device-orientation-permission-ui="enabled:true">
+  device-orientation-permission-ui="enabled:false">
 
-  <a-camera look-controls="enabled:false"></a-camera>
+  <a-camera position="0 0 0" look-controls="enabled:false"></a-camera>
 
-  <!-- 12織 targetIndex=0 -->
+  <!-- 12織：假設對應 targets.mind 的 targetIndex = 0 -->
   <a-entity mindar-image-target="targetIndex: 0">
     <a-plane position="0 0 0"
              width="0.8" height="0.8"
+             material="src: url(./icon/png/12織.png); transparent:true; side:double;">
+    </a-plane>
+  </a-entity>
+
+  <a-entity light="type:ambient; intensity:0.9"></a-entity>
+  <a-entity light="type:directional; intensity:0.8" position="0 1 0"></a-entity>
+</a-scene>
+
+<script>
+  const sceneEl = document.getElementById('scene');
+  const startBtn = document.getElementById('startBtn');
+
+  // 跟舊版 index.html 一樣：點按鈕後才啟動 MindAR
+  startBtn.addEventListener('click', () => {
+    startBtn.style.display = 'none';
+    const sys = sceneEl.systems['mindar-image-system'];
+    if (sys && typeof sys.start === 'function') {
+      sys.start();
+    } else {
+      alert('MindAR 尚未就緒，請稍後重新整理再試一次。');
+    }
+  });
+</script>
+
+</body>
+</html>
