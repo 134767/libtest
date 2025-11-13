@@ -1,13 +1,16 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>濟時樓 AR 掃描 - 12織</title>
+  <meta charset="utf-8" />
+  <title>學院之心 AR 掃描器</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
-  <!-- 完全沿用官方 Smoke Test 使用的版本 -->
+  <!-- 與首頁相同版本的 A-Frame + MindAR -->
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.3/dist/mindar-image-aframe.prod.js"></script>
+
+  <!-- 共用樣式（按鈕等） -->
+  <link rel="stylesheet" href="./assets/css/style.css"/>
 
   <style>
     html, body {
@@ -19,7 +22,7 @@
     }
 
     /* 上方標題列 + 返回 */
-    #topBar {
+    .scan-topbar {
       position: fixed;
       left: 0;
       right: 0;
@@ -32,11 +35,12 @@
       align-items: center;
       box-sizing: border-box;
     }
-    #topBar-title {
+    .scan-title {
       font-size: 18px;
       font-weight: 700;
+      color: #111827;
     }
-    #backBtn {
+    .scan-back {
       border: none;
       padding: 8px 14px;
       border-radius: 999px;
@@ -45,128 +49,192 @@
       font-size: 14px;
     }
 
-    /* 中央白色掃描框（透明底） */
-    #scanFrame {
+    /* 中央白框（預設 QR 掃描框） */
+    .scan-frame-wrap {
       position: fixed;
       inset: 0;
-      margin: auto;
+      z-index: 10;
+      display: grid;
+      place-items: center;
+      pointer-events: none;
+    }
+    .scan-frame {
       width: min(70vw, 420px);
-      aspect-ratio: 1/1;
+      aspect-ratio: 1 / 1;
       border-radius: 24px;
       border: 4px solid #ffffff;
-      pointer-events: none;
-      z-index: 10;
+      position: relative;
+      box-sizing: border-box;
     }
+    .scan-corner {
+      position: absolute;
+      width: 26px;
+      height: 26px;
+      border: 4px solid #ffffff;
+    }
+    .scan-corner.tl { left: -2px; top: -2px; border-right: none; border-bottom: none; }
+    .scan-corner.tr { right: -2px; top: -2px; border-left: none; border-bottom: none; }
+    .scan-corner.bl { left: -2px; bottom: -2px; border-right: none; border-top: none; }
+    .scan-corner.br { right: -2px; bottom: -2px; border-left: none; border-top: none; }
 
-    /* 中下方狀態文字（debug 用） */
-    #status {
+    /* 中下方狀態列 */
+    .scan-status {
       position: fixed;
       left: 50%;
-      bottom: 12px;
+      bottom: 14px;
       transform: translateX(-50%);
       z-index: 20;
-      padding: 6px 10px;
+      padding: 6px 12px;
+      border-radius: 999px;
       font-size: 12px;
       color: #fff;
-      background: rgba(0,0,0,.5);
-      border-radius: 999px;
+      background: rgba(0,0,0,.55);
+      max-width: 90vw;
+      text-align: center;
     }
 
-    /* 「開始掃描」按鈕：完全照官方 smoke test 寫法 */
-    #startBtn {
+    /* 中央「開始掃描」按鈕（為了確保在使用者手勢下啟動相機） */
+    .scan-start {
       position: fixed;
       left: 50%;
       top: 50%;
-      transform: translate(-50%,-50%);
+      transform: translate(-50%, -50%);
       z-index: 30;
-      font-size: 18px;
-      padding: 10px 22px;
+      padding: 12px 24px;
       border-radius: 999px;
       border: none;
-      background: #2563eb;
+      font-size: 16px;
+      font-weight: 700;
       color: #fff;
-      box-shadow: 0 10px 25px rgba(15,23,42,.25);
+      background: linear-gradient(180deg,#3b82f6,#2563eb);
+      box-shadow: 0 12px 30px rgba(15,23,42,.35);
+      cursor: pointer;
     }
 
-    /* 把 VR 按鈕藏起來 */
-    .a-enter-vr,
-    .a-enter-ar,
-    .a-enter-vr-button,
-    .a-enter-ar-button {
+    /* 隱藏 VR 按鈕 */
+    .a-enter-vr, .a-enter-ar,
+    .a-enter-vr-button, .a-enter-ar-button {
       display: none !important;
     }
   </style>
 </head>
 <body>
-  <!-- 標題列 -->
-  <div id="topBar">
-    <div id="topBar-title">請對準：12織</div>
-    <button id="backBtn" onclick="history.back()">返回</button>
+  <header class="scan-topbar">
+    <div class="scan-title" id="scan-title">請對準：學院之心</div>
+    <button class="scan-back" onclick="history.back()">返回</button>
+  </header>
+
+  <!-- 中央掃描框 (白色) -->
+  <div class="scan-frame-wrap">
+    <div class="scan-frame">
+      <div class="scan-corner tl"></div>
+      <div class="scan-corner tr"></div>
+      <div class="scan-corner bl"></div>
+      <div class="scan-corner br"></div>
+    </div>
   </div>
 
-  <!-- 中央掃描框 -->
-  <div id="scanFrame"></div>
+  <!-- 狀態提示 -->
+  <div class="scan-status" id="scan-status">請點「開始掃描」啟動相機</div>
 
-  <!-- 狀態文字 -->
-  <div id="status">請點選「開始掃描」啟動相機</div>
+  <!-- 開始掃描按鈕 -->
+  <button class="scan-start" id="scan-start">開始掃描</button>
 
-  <!-- 官方 Smoke Test 風格：按鈕啟動 AR -->
-  <button id="startBtn">開始掃描</button>
-
-  <!-- AR 場景：程式邏輯交給 MindAR 自己處理 -->
+  <!-- AR 場景：只負責影像追蹤，邏輯在下面 JS -->
   <a-scene
     id="scene"
     mindar-image="imageTargetSrc: ./targets.mind; autoStart: false"
     embedded
-    vr-mode-ui="enabled: false">
+    vr-mode-ui="enabled: false"
+    device-orientation-permission-ui="enabled: false">
 
-    <a-camera look-controls="enabled: false"></a-camera>
+    <a-camera look-controls="enabled:false"></a-camera>
 
-    <!-- 假設 12織 是 targets.mind 的第 0 筆 -->
-    <a-entity id="t12" mindar-image-target="targetIndex: 0">
-      <!-- 之後你要顯示 12織 PNG，再把下面註解打開即可 -->
-      <!--
-      <a-plane position="0 0 0"
-               width="0.75"
-               height="0.75"
-               material="src: url(./icon/png/12織.png); transparent: true; side: double">
-      </a-plane>
-      -->
-    </a-entity>
+    <!-- 定義六個常用學院的 anchor（index 根據 targets.mind 順序） -->
+    <a-entity id="anchor-2"  mindar-image-target="targetIndex: 2"></a-entity>  <!-- 03傳 -->
+    <a-entity id="anchor-5"  mindar-image-target="targetIndex: 5"></a-entity>  <!-- 06理 -->
+    <a-entity id="anchor-8"  mindar-image-target="targetIndex: 8"></a-entity>  <!-- 09法 -->
+    <a-entity id="anchor-9"  mindar-image-target="targetIndex: 9"></a-entity>  <!-- 10社 -->
+    <a-entity id="anchor-10" mindar-image-target="targetIndex:10"></a-entity>  <!-- 11管 -->
+    <a-entity id="anchor-11" mindar-image-target="targetIndex:11"></a-entity>  <!-- 12織 -->
+
   </a-scene>
 
   <script>
-    const sceneEl = document.querySelector('#scene');
-    const startBtn = document.querySelector('#startBtn');
-    const statusEl = document.querySelector('#status');
-    const t12 = document.querySelector('#t12');
+    // 對應：force=03傳 之類情況，補齊 idx / frame
+    const IDX_BY_CODE = {
+      "03傳": 2,
+      "06理": 5,
+      "09法": 8,
+      "10社": 9,
+      "11管": 10,
+      "12織": 11
+    };
 
-    // 按下「開始掃描」才啟動（完全仿官方 smoke test）
-    startBtn.addEventListener('click', async () => {
-      startBtn.style.display = 'none';
-      statusEl.textContent = '正在啟動相機與 AR…';
+    // 解析網址參數
+    const params = new URLSearchParams(location.search);
+    let target = params.get("target") || "";
+    let frame  = params.get("frame")  || "";
+    let idxStr = params.get("idx")    || "";
+    const step = params.get("step")   || "";
 
-      const mindarSystem = sceneEl.systems['mindar-image-system'];
-      if (!mindarSystem || !mindarSystem.start) {
-        statusEl.textContent = 'MindAR 尚未準備完成，請重新整理頁面。';
+    const force = params.get("force");
+    if (force) {
+      target = force;
+      if (!frame) frame = `icon/png/${force}.png`;
+      if (!idxStr && IDX_BY_CODE[force] !== undefined) {
+        idxStr = String(IDX_BY_CODE[force]);
+      }
+    }
+
+    const idx = Number(idxStr);
+    const titleEl  = document.getElementById("scan-title");
+    const statusEl = document.getElementById("scan-status");
+    const startBtn = document.getElementById("scan-start");
+    const sceneEl  = document.getElementById("scene");
+
+    if (target) {
+      titleEl.textContent = `請對準：${target}`;
+    }
+
+    // 只對目前指定的 anchor 綁定事件（避免多目標干擾）
+    let activeAnchor = null;
+    if (!Number.isNaN(idx)) {
+      activeAnchor = document.getElementById(`anchor-${idx}`);
+    }
+
+    if (!activeAnchor) {
+      statusEl.textContent = "未指定有效的目標 idx，請從任務頁重新進入。";
+    } else {
+      activeAnchor.addEventListener("targetFound", () => {
+        statusEl.textContent = `已辨識到 ${target || "目標"}！`;
+        // 未來如需記錄認證結果或跳轉，可在這裡加程式
+      });
+      activeAnchor.addEventListener("targetLost", () => {
+        statusEl.textContent = `目標遺失，請重新對準 ${target || "目標"}。`;
+      });
+    }
+
+    // 按下「開始掃描」：在使用者手勢下啟動 MindAR 相機
+    startBtn.addEventListener("click", async () => {
+      startBtn.style.display = "none";
+      statusEl.textContent = "正在啟動相機與 AR…";
+
+      const sys = sceneEl.systems["mindar-image-system"];
+      if (!sys || typeof sys.start !== "function") {
+        statusEl.textContent = "MindAR 尚未準備完成，請重新整理頁面。";
         return;
       }
 
       try {
-        await mindarSystem.start();
-        statusEl.textContent = '請對準 12織 圖樣';
+        await sys.start();
+        statusEl.textContent = target
+          ? `請對準「${target}」的學院之心圖樣`
+          : "請對準指定圖樣";
       } catch (e) {
         console.error(e);
-        statusEl.textContent = '相機啟動失敗，請檢查瀏覽器權限。';
+        statusEl.textContent = "相機啟動失敗，請確認瀏覽器已允許使用相機。";
       }
-    });
-
-    // 追蹤事件（純 debug）
-    t12.addEventListener('targetFound', () => {
-      statusEl.textContent = '已辨識到 12織！';
-    });
-    t12.addEventListener('targetLost', () => {
-      statusEl.textContent = '目標遺失，請重新對準 12織。';
     });
   </script>
 </body>
