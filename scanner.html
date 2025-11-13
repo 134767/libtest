@@ -22,12 +22,11 @@
       margin: 0;
       padding: 0;
       height: 100%;
-      background: #000; /* 背景改黑，避免白牆感 */
+      background: #000;
       font-family: system-ui, -apple-system, BlinkMacSystemFont,
                    "Noto Sans TC", sans-serif;
     }
 
-    /* 整體版面：上方標題 + 下方 AR 區塊 */
     .page {
       display: flex;
       flex-direction: column;
@@ -65,13 +64,13 @@
       overflow: hidden;
     }
 
-    /* AR 場景塞滿 main，高度就是 header 下面到螢幕底 */
+    /* AR 場景：填滿 header 底下的全部空間 */
     #scene {
       width: 100%;
       height: 100%;
     }
 
-    /* ✅ 預設 QR 掃描框：只有框線，沒有白底 */
+    /* ✅ 預設掃描框：只有白框、背景透明 */
     .scanner-frame {
       position: absolute;
       inset: 0;
@@ -81,24 +80,32 @@
       aspect-ratio: 1 / 1;
       border-radius: 24px;
       border: 4px solid rgba(255, 255, 255, 0.95);
-      background: transparent;   /* 關鍵：不填色，完全透明 */
+      background: transparent;
       box-sizing: border-box;
-      pointer-events: none;      /* 不擋觸控 */
+      pointer-events: none;
+    }
+
+    /* 🔇 關閉 A-Frame 預設 VR/AR 按鈕 */
+    .a-enter-vr,
+    .a-enter-ar,
+    .a-enter-vr-button,
+    .a-enter-ar-button {
+      display: none !important;
     }
   </style>
 </head>
 <body>
   <div class="page">
-    <!-- 上方標題列（按鈕不會再被裁切） -->
+    <!-- 上方標題列 -->
     <div class="header">
       <div class="header-title">請對準：12織</div>
-      <!-- 這裡依你的實際路徑調整，例如 ../index.html 或 pages/mission1.html -->
-      <button class="btn-back" onclick="window.location.href='index.html';">
+      <!-- 返回：如果你要回首頁或任務一，可以改成指定網址 -->
+      <button class="btn-back" onclick="history.back();">
         返回
       </button>
     </div>
 
-    <!-- AR 區域 -->
+    <!-- 下方 AR 區域 -->
     <div class="main">
       <a-scene id="scene"
         mindar-image="imageTargetSrc: targets.mind"
@@ -110,17 +117,18 @@
 
         <a-camera look-controls="enabled: false"></a-camera>
 
-        <!-- 12織 對應的 targetIndex，依你 targets.mind 的順序修改 -->
+        <!-- 12織 對應的 targetIndex（假設是第 0 個） -->
         <a-entity mindar-image-target="targetIndex: 0">
-          <!-- 這裡可以放你的 3D 或 PNG，如果暫時不要就用透明平面佔位 -->
+          <!-- ✅ 12織 PNG：放在掃描框中間 -->
           <a-plane position="0 0 0"
-                   width="1" height="1"
-                   material="opacity: 0">
+                   width="0.75"
+                   height="0.75"
+                   material="src: url(./icon/png/12織.png); transparent: true">
           </a-plane>
         </a-entity>
       </a-scene>
 
-      <!-- ✅ 預設 QR 掃描框（無 PNG、無白色畫布） -->
+      <!-- 掃描框（純白框、透明底） -->
       <div class="scanner-frame"></div>
     </div>
   </div>
