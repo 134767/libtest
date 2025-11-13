@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>任務一：濟時篇｜圖書館無限城冒險</title>
+  <meta name="theme-color" content="#ffffff" />
+  <style>
+    :root{--bg:#f8fafc;--text:#0f172a;--muted:#64748b;--panel:#ffffff;--line:#e5e7eb;--brand:#2563eb;--brand-2:#22c55e;--radius:16px;--shadow:0 10px 25px rgba(15,23,42,.08);--ring:rgba(37,99,235,.25);}
+    *{box-sizing:border-box;}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica Neue,Arial;color:var(--text);background:var(--bg);display:grid;grid-template-rows:auto auto 1fr;min-height:100vh;}
+    header{padding:20px 16px 4px;}
+    header h1{margin:0;font-size:clamp(20px,4.2vw,28px);font-weight:800;}
+    .progress-wrap{padding:8px 16px 14px;}
+    .steps{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:10px;}
+    .step{display:grid;place-items:center;gap:6px;color:var(--muted);font-size:11px;}
+    .step .dot{width:28px;height:28px;border-radius:999px;display:grid;place-items:center;font-weight:800;background:#fff;border:1px solid var(--line);box-shadow:0 0 0 0 var(--ring);transition:.18s;}
+    .step.active .dot{background:linear-gradient(180deg,var(--brand),#60a5fa);color:#fff;border-color:transparent;box-shadow:0 0 0 6px var(--ring);}
+    .bar{width:100%;height:8px;background:#e5e7eb;border-radius:999px;overflow:hidden;}
+    .bar>i{display:block;height:100%;width:var(--p,0%);background:linear-gradient(90deg,var(--brand),var(--brand-2));transition:width .35s ease;}
+    main{padding:16px;display:grid;gap:20px;}
+    section{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;}
+    .map-area{margin-top:20px;}
+    .map-wrap{position:relative;max-width:100%;margin-top:16px;}
+    .map-wrap img.map-img{width:100%;height:auto;border-radius:12px;box-shadow:0 6px 16px rgba(0,0,0,.1);}
+    .hotgrid{position:absolute;inset:0;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(3,1fr);gap:4px;pointer-events:none;}
+    .hotspot{position:relative;display:flex;align-items:center;justify-content:center;pointer-events:auto;}
+    .hotspot a{display:inline-flex;align-items:center;gap:8px;padding:10px 12px;border-radius:999px;background:rgba(255,255,255,.85);border:1px solid var(--line);box-shadow:0 4px 12px rgba(0,0,0,.12);backdrop-filter:blur(6px);font-weight:800;color:var(--text);text-decoration:none;}
+    .hotspot a .num{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:999px;background:linear-gradient(180deg,var(--brand),#60a5fa);color:#fff;font-size:12px;}
+    .hotspot a:hover{transform:translateY(-1px);}
+  </style>
+</head>
+<body>
+  <header><h1>任務一：濟時篇</h1></header>
+
+  <section class="progress-wrap" aria-label="任務進度">
+    <div class="steps" id="steps">
+      <div class="step" data-step="1"><div class="dot">1</div>首頁</div>
+      <div class="step active" data-step="2"><div class="dot">2</div>任務一</div>
+      <div class="step" data-step="3"><div class="dot">3</div>任務二</div>
+      <div class="step" data-step="4"><div class="dot">4</div>任務三</div>
+      <div class="step" data-step="5"><div class="dot">5</div>工商</div>
+      <div class="step" data-step="6"><div class="dot">6</div>完成</div>
+    </div>
+    <div class="bar"><i id="bar"></i></div>
+  </section>
+
+  <main>
+    <section>
+      <h2>任務一：濟時篇</h2>
+      <p>如今，學院之心被不明力量困在虛幻與現實之隙，必須重新點亮圖書館內的學院之心來穩定圖書館的知識之力。</p>
+      <p>初始戒律與管理的院務長——費濟時，只留下了濟時樓虛幻與現實之隙的地圖。</p>
+      <p>請利用此地圖找尋在濟時樓的學院之心，重新點亮他們，讓濟時樓回歸現實吧！</p>
+
+      <div class="map-area">
+        <div class="map-wrap" id="sbmap">
+          <img class="map-img" src="../icon/Universal/SBmap.jpg?v=4" alt="濟時樓SB地圖" />
+          <div class="hotgrid">
+            <!-- 左上=12織 → idx=11 -->
+            <div class="hotspot" style="grid-area:1/1;justify-content:flex-start;padding-left:8px;">
+              <a href="#" data-target="12織" data-frame="12織.png" data-idx="11"><span class="num">1</span><span>12織</span></a>
+            </div>
+            <!-- 左中=06理 → idx=5 -->
+            <div class="hotspot" style="grid-area:2/1;justify-content:flex-start;padding-left:8px;">
+              <a href="#" data-target="06理" data-frame="06理.png" data-idx="5"><span class="num">3</span><span>06理</span></a>
+            </div>
+            <!-- 左下=10社 → idx=9 -->
+            <div class="hotspot" style="grid-area:3/1;justify-content:flex-start;padding-left:8px;">
+              <a href="#" data-target="10社" data-frame="10社.png" data-idx="9"><span class="num">5</span><span>10社</span></a>
+            </div>
+
+            <!-- 右上=11管 → idx=10 -->
+            <div class="hotspot" style="grid-area:1/2;justify-content:flex-end;padding-right:8px;">
+              <a href="#" data-target="11管" data-frame="11管.png" data-idx="10"><span class="num">2</span><span>11管</span></a>
+            </div>
+            <!-- 右中=03傳 → idx=2 -->
+            <div class="hotspot" style="grid-area:2/2;justify-content:flex-end;padding-right:8px;">
+              <a href="#" data-target="03傳" data-frame="03傳.png" data-idx="2"><span class="num">4</span><span>03傳</span></a>
+            </div>
+            <!-- 右下=09法 → idx=8 -->
+            <div class="hotspot" style="grid-area:3/2;justify-content:flex-end;padding-right:8px;">
+              <a href="#" data-target="09法" data-frame="09法.png" data-idx="8"><span class="num">6</span><span>09法</span></a>
+            </div>
+          </div>
+        </div>
+        <noscript>
+          <p>
+            <a href="../scanner.html?target=12%E7%B9%94&frame=icon/png/12%E7%B9%94.png&idx=11&step=2">12織</a> ·
+            <a href="../scanner.html?target=06%E7%90%86&frame=icon/png/06%E7%90%86.png&idx=5&step=2">06理</a> ·
+            <a href="../scanner.html?target=10%E7%A4%BE&frame=icon/png/10%E7%A4%BE.png&idx=9&step=2">10社</a> ·
+            <a href="../scanner.html?target=11%E7%AE%A1&frame=icon/png/11%E7%AE%A1.png&idx=10&step=2">11管</a> ·
+            <a href="../scanner.html?target=03%E5%82%B3&frame=icon/png/03%E5%82%B3.png&idx=2&step=2">03傳</a> ·
+            <a href="../scanner.html?target=09%E6%B3%95&frame=icon/png/09%E6%B3%95.png&idx=8&step=2">09法</a>
+          </p>
+        </noscript>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const TOTAL_STEPS=6, CURRENT_STEP=1;
+    const steps=document.querySelectorAll('.step'), bar=document.getElementById('bar');
+    steps.forEach((el,i)=>{el.classList.remove('active'); if(i===CURRENT_STEP) el.classList.add('active');});
+    const percent=Math.round((CURRENT_STEP/(TOTAL_STEPS-1))*100);
+    bar.style.setProperty('--p', percent+'%');
+    bar.parentElement.setAttribute('aria-valuenow', String(percent));
+
+    document.querySelectorAll('.hotspot a').forEach(a=>{
+      a.addEventListener('click', (e)=>{
+        e.preventDefault();
+        const target = a.dataset.target || '';
+        const frame  = a.dataset.frame  || '';
+        const idx    = a.dataset.idx    || '';
+        const url = new URL('../scanner.html', location.href);
+        url.searchParams.set('target', target);
+        url.searchParams.set('frame', `icon/png/${frame}`);
+        url.searchParams.set('idx', idx);      // ← 直接傳 MindAR index
+        url.searchParams.set('step', '2');
+        location.assign(url.toString());
+      });
+    });
+  </script>
+</body>
+</html>

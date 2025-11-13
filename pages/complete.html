@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>完成</title>
+<link rel="stylesheet" href="../assets/css/style.css"/>
+<script type="module">
+import { initProgress } from "../assets/js/app.js";
+window.addEventListener("DOMContentLoaded", () => initProgress("完成"));
+</script>
+</head>
+<body>
+  <div class="container">
+    <header><h1>完成</h1></header>
+    <div class="progress-block"><div class="pbar-labels" id="pbar-labels"></div><div class="pbar"><span id="pbar-fill"></span></div></div>
+    <main class="card">
+<h2>完成</h2>
+<p>恭喜！你已完成三大任務。若得分達 100 分，即可取得圖書館認證。</p>
+<p class="notice">若需修改作答，可回到各任務頁重做。關閉瀏覽器不會清除資料。</p>
+<div class="button-row"><a class="button" href="../index.html">回首頁</a></div>
+</main>
+    <div class="footer">© 2025 Fu Jen Library · FJU Freshman Adventure</div>
+  </div>
+</body>
+</html>

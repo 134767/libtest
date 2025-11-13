@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>2026大學新鮮人｜圖書館無限城冒險</title>
+  <meta name="theme-color" content="#ffffff" />
+  <style>
+    :root{
+      --bg:#f7fafc;
+      --text:#0f172a;
+      --muted:#64748b;
+      --panel:#ffffff;
+      --line:#e5e7eb;
+      --brand:#2563eb;
+      --brand-2:#22c55e;
+      --accent:#0ea5e9;
+      --shadow:0 10px 25px rgba(15,23,42,.08);
+      --radius:16px;
+      --ring: rgba(37, 99, 235, .25);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Noto Sans, 'Helvetica Neue', Arial, 'Apple Color Emoji', 'Segoe UI Emoji';
+      color:var(--text);
+      background: radial-gradient(1200px 800px at 80% -10%, rgba(37,99,235,.08), transparent 55%),
+                  radial-gradient(900px 700px at 0% 30%, rgba(14,165,233,.08), transparent 55%),
+                  var(--bg);
+      display:grid; grid-template-rows:auto auto 1fr; min-height:100vh;
+    }
+    .site-title{ padding:22px 16px 4px; }
+    .site-title h1{ margin:0; font-size: clamp(20px, 4.2vw, 30px); font-weight:800; letter-spacing:.2px; }
+    .progress-wrap { padding: 8px 16px 14px; }
+    .steps { display:grid; grid-template-columns: repeat(6,1fr); gap:8px; margin-bottom:10px; }
+    .step { display:grid; place-items:center; gap:6px; color:var(--muted); font-size:11px; user-select:none; }
+    .step .dot{ width:28px; height:28px; border-radius:999px; display:grid; place-items:center; font-weight:800; background:#fff; border:1px solid var(--line); box-shadow:0 0 0 0 var(--ring); transition:.18s; }
+    .step.active .dot,.step.done .dot{ background: linear-gradient(180deg, var(--brand), #60a5fa); color:#fff; border-color: transparent; box-shadow: 0 0 0 6px var(--ring); }
+    .bar { width:100%; height:8px; background:#e5e7eb; border-radius:999px; overflow:hidden; position:relative; }
+    .bar > i { display:block; height:100%; width: var(--p,0%); background: linear-gradient(90deg, var(--brand), var(--brand-2)); transition: width .35s ease; }
+    .container{ padding:12px 16px 60px; display:grid; gap:18px; }
+    .intro{ background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); padding:18px; }
+    .intro h2{ margin:0 0 8px; font-size: clamp(18px, 3.6vw, 22px); }
+    .intro p{ margin:8px 0; color:var(--text); line-height:1.7; }
+    .intro .note{ margin-top:10px; padding:8px 12px; border-radius:12px; background:#eef6ff; color:#1e40af; border:1px solid #bfdbfe; font-weight:700; }
+    .panel{ background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); padding:18px; }
+    .panel h3{ margin:0 0 12px; font-size:18px; }
+    .grid{ display:grid; gap:12px; grid-template-columns: 1fr; }
+    @media (min-width:720px){ .grid{ grid-template-columns: repeat(3, 1fr); } }
+    .field{ display:grid; gap:6px; }
+    .label{ font-weight:700; font-size:13px; }
+    .input{ padding:10px 12px; border-radius:12px; border:1px solid var(--line); background:#fff; font-size:14px; }
+    .help{ margin-top:8px; padding:8px 12px; border-radius:12px; background:#e0f2fe; color:#075985; border:1px solid #bae6fd; font-size:13px; }
+    .actions{ display:flex; flex-wrap:wrap; gap:10px; margin-top:12px; }
+    .btn{ appearance:none; border:0; border-radius:12px; padding:12px 14px; font-weight:800; font-size:14px; text-decoration:none; cursor:pointer; }
+    .btn.primary{ color:#fff; background:linear-gradient(180deg,#3b82f6,#2563eb); box-shadow:var(--shadow); }
+    .btn.outline{ background:#fff; color:#0f172a; border:1px solid var(--line); }
+  </style>
+</head>
+<body>
+  <header class="site-title">
+    <h1>2026大學新鮮人-圖書館無限城冒險</h1>
+  </header>
+  <section class="progress-wrap" aria-label="任務進度">
+    <div class="steps" id="steps">
+      <div class="step active" data-step="1" aria-current="step"><div class="dot">1</div>首頁</div>
+      <div class="step" data-step="2"><div class="dot">2</div>任務一</div>
+      <div class="step" data-step="3"><div class="dot">3</div>任務二</div>
+      <div class="step" data-step="4"><div class="dot">4</div>任務三</div>
+      <div class="step" data-step="5"><div class="dot">5</div>工商</div>
+      <div class="step" data-step="6"><div class="dot">6</div>完成</div>
+    </div>
+    <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="完成百分比"><i id="bar"></i></div>
+  </section>
+  <main class="container" id="main">
+    <section class="intro">
+      <h2>世界的呼喚與沉睡的知識</h2>
+      <h2>年輕的知識學徒們… 是時候甦醒了…</h2>
+      <p>傳說，『學院之心』是所有知識和智慧的源頭，但它搖搖欲墜及接消失於圖書館的『虛幻與現實之隙』中！</p>
+      <p>這個裂隙正在扭曲你們的認知，將整個校園化為一個無邊際的迷宮。</p>
+      <p>你們的潛能之火與遺落在圖書館的學院之心正在產生共鳴…</p>
+      <p>你們唯一的出路，是透過艱難的挑戰與學習，去尋找散落在圖書館各個角落的「學院之心」重新點燃，才能突破重重困難，並徹底解開圖書館的終極謎團，重返穩定的現實完成大學學業！</p>
+      <p class="note">無限知識的冒險，現在開始。<br>📣 本次活動的最終得分要達到 <b>100分</b> 才能取得圖書館給予的認證唷！</p>
+    </section>
+    <section class="panel">
+      <h3>基本資料認證</h3>
+      <div class="grid">
+        <div class="field">
+          <label class="label" for="sid">學號 *</label>
+          <input class="input" id="sid" placeholder="可留空測試" />
+        </div>
+        <div class="field">
+          <label class="label" for="name">姓名 *</label>
+          <input class="input" id="name" placeholder="1" />
+        </div>
+        <div class="field">
+          <label class="label" for="mail">Email *</label>
+          <input class="input" id="mail" type="email" placeholder="1" />
+        </div>
+      </div>
+      <div class="help">（目前為測試模式，已停用格式驗證）</div>
+      <div class="actions">
+        <a class="btn primary" id="startBtn" href="./pages/mission1.html">開始冒險</a>
+      </div>
+    </section>
+  </main>
+  <script>
+    const TOTAL_STEPS = 6; // 1..6
+    const CURRENT_STEP = 0; // 首頁索引
+
+    const steps = Array.from(document.querySelectorAll('.step'));
+    const bar = document.getElementById('bar');
+
+    function renderProgress(){
+      steps.forEach((el,i)=>{
+        el.classList.remove('active','done');
+        if(i === CURRENT_STEP) el.classList.add('active');
+      });
+      const percent = Math.round((CURRENT_STEP / (TOTAL_STEPS - 1)) * 100);
+      bar.style.setProperty('--p', percent + '%');
+      bar.parentElement.setAttribute('aria-valuenow', String(percent));
+    }
+
+    const qs = new URLSearchParams(location.search).get('step');
+    if (qs) {
+      const t = Math.max(1, Math.min(Number(qs), TOTAL_STEPS));
+      steps.forEach((el,i)=>{
+        el.classList.remove('active','done');
+        if(i === (t-1)) el.classList.add('active');
+      });
+      const percent = Math.round(((t-1) / (TOTAL_STEPS - 1)) * 100);
+      bar.style.setProperty('--p', percent + '%');
+      bar.parentElement.setAttribute('aria-valuenow', String(percent));
+    } else {
+      renderProgress();
+    }
+
+    const fields=['sid','name','mail'];
+    fields.forEach(id=>{
+      const el=document.getElementById(id);
+      const key='home_'+id;
+      if(!el) return;
+      const saved=localStorage.getItem(key);
+      if(saved) el.value=saved;
+      el.addEventListener('input',()=>localStorage.setItem(key,el.value||''));
+    });
+  </script>
+</body>
+</html>

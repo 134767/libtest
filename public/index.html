@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>闖關 AR 草案（測試）</title>
+  <link rel="stylesheet" href="./style.css"/>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <h1>闖關 AR 草案（測試）</h1>
+      <p>點選學院 → 查看任務資訊 → 點「開啟 AR 掃描」進行認證</p>
+    </header>
+
+    <section id="academy-list" class="grid"></section>
+
+    <section id="task-panel" class="panel hidden">
+      <h2 id="task-title"></h2>
+      <div id="task-desc"></div>
+      <div class="actions">
+        <button id="btn-ar">開啟 AR 掃描</button>
+      </div>
+    </section>
+  </div>
+
+  <img id="loading" class="loading hidden" alt="loading" src="./icon/Universal/loading.png"/>
+
+  <script src="./app.js"></script>
+</body>
+</html>

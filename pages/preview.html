@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>預覽填答</title>
+<link rel="stylesheet" href="../assets/css/style.css"/>
+<script type="module">
+import { initProgress } from "../assets/js/app.js";
+window.addEventListener("DOMContentLoaded", () => initProgress("預覽填答"));
+</script>
+</head>
+<body>
+  <div class="container">
+    <header><h1>預覽填答</h1></header>
+    <div class="progress-block"><div class="pbar-labels" id="pbar-labels"></div><div class="pbar"><span id="pbar-fill"></span></div></div>
+    <main class="card">
+<h2>上前預覽填答內容</h2>
+<p>提交前請確認你的基本資料與進度。</p>
+<div id="preview" class="notice">載入中…</div>
+<div class="button-row">
+  <a class="button" href="mission1.html">回到任務一</a>
+  <a class="button" href="complete.html">直接完成</a>
+</div>
+<script type="module">
+import { loadProfile, getProgress } from "../assets/js/app.js";
+window.addEventListener("DOMContentLoaded", () => {
+  const el = document.getElementById("preview");
+  if(el){ el.innerHTML = `目前進度：<b>${getProgress()}%</b>`; }
+});
+</script>
+</main>
+    <div class="footer">© 2025 Fu Jen Library · FJU Freshman Adventure</div>
+  </div>
+</body>
+</html>

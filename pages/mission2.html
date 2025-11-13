@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<title>任務二｜SB MAP（認證）</title>
+<link rel="stylesheet" href="../assets/css/style.css"/>
+<script type="module">
+  import { initProgress } from "../assets/js/app.js";
+  window.addEventListener("DOMContentLoaded", () => initProgress("任務二"));
+</script>
+</head>
+<body>
+  <div class="container">
+    <header><h1>任務二｜SB MAP（認證）</h1></header>
+
+    <div class="progress-block">
+      <div class="pbar-labels" id="pbar-labels"></div>
+      <div class="pbar"><span id="pbar-fill"></span></div>
+    </div>
+
+    <main class="card">
+      <h2>第二大項｜SB MAP 認證</h2>
+      <p>依地圖提示完成各學院的 AR 認證。點下方任一按鈕進入掃描器。</p>
+
+      <div class="button-grid">
+        <button class="button" data-target="12織" data-frame="12織.png" data-idx="11">12織</button>
+        <button class="button" data-target="06理" data-frame="06理.png" data-idx="5">06理</button>
+        <button class="button" data-target="10社" data-frame="10社.png" data-idx="9">10社</button>
+        <button class="button" data-target="11管" data-frame="11管.png" data-idx="10">11管</button>
+        <button class="button" data-target="03傳" data-frame="03傳.png" data-idx="2">03傳</button>
+        <button class="button" data-target="09法" data-frame="09法.png" data-idx="8">09法</button>
+      </div>
+
+      <div class="button-row" style="margin-top:16px">
+        <a class="button" href="mission1.html">回任務一</a>
+        <a class="button" href="mission3.html">去任務三</a>
+      </div>
+    </main>
+
+    <div class="footer">© 2025 Fu Jen Library · FJU Freshman Adventure</div>
+  </div>
+
+  <script>
+    // 所有按鈕統一導向共用的 scanner.html
+    document.querySelectorAll('.button-grid .button').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const target = btn.dataset.target;
+        const frame  = btn.dataset.frame;
+        const idx    = btn.dataset.idx;
+        const url = new URL('../scanner.html', location.href);
+        url.searchParams.set('target', target);
+        url.searchParams.set('frame', `icon/png/${frame}`);
+        url.searchParams.set('idx', idx);
+        url.searchParams.set('step', '2');     // 任務二
+        // 如需微調圖示大小，可追加：url.searchParams.set('scale','0.9');
+        location.assign(url.toString());
+      });
+    });
+  </script>
+</body>
+</html>

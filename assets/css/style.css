@@ -1,0 +1,294 @@
+/* =========================================================
+   Fu Jen Library · Freshman AR Adventure
+   style.css  (2025 正式草案通用樣式)
+   ========================================================= */
+
+/* --------------------
+   Reset & Base
+-------------------- */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  font-family: "Noto Sans TC", "Microsoft JhengHei", system-ui, sans-serif;
+  background: #f9fafb;
+  color: #1f2937;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+a {
+  color: #2563eb;
+  text-decoration: none;
+}
+a:hover { text-decoration: underline; }
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  outline: none;
+  background: none;
+}
+
+/* --------------------
+   Layout
+-------------------- */
+.container {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 1.25rem;
+}
+
+header h1 {
+  font-size: 1.6rem;
+  color: #111827;
+  margin-bottom: 1rem;
+  line-height: 1.3;
+  text-align: center;
+}
+
+/* --------------------
+   Card
+-------------------- */
+.card {
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.card h2, .card h3 {
+  margin-bottom: 0.5rem;
+  color: #1f2937;
+}
+
+.card p {
+  margin-bottom: 0.75rem;
+}
+
+.card strong {
+  color: #111827;
+}
+
+/* --------------------
+   Grid (for forms)
+-------------------- */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+label {
+  display: block;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.25rem;
+}
+
+input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border 0.2s, box-shadow 0.2s;
+}
+
+input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.2);
+  outline: none;
+}
+
+/* --------------------
+   Buttons
+-------------------- */
+.button {
+  display: inline-block;
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
+  color: #fff;
+  padding: 0.6rem 1.25rem;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 1rem;
+  letter-spacing: 0.02em;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(37,99,235,0.25);
+}
+
+.button:active {
+  transform: translateY(0);
+  box-shadow: 0 0 0 rgba(0,0,0,0);
+}
+
+.button-row {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.btn-wide {
+  width: 100%;
+  text-align: center;
+}
+
+/* --------------------
+   Badge & Lists
+-------------------- */
+.badge {
+  display: inline-block;
+  background: #e5e7eb;
+  color: #374151;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.25rem 0.75rem;
+  border-radius: 10px;
+  margin: 0.5rem 0;
+}
+
+ul.clean {
+  list-style: none;
+  padding-left: 1rem;
+}
+ul.clean li {
+  position: relative;
+  padding-left: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+ul.clean li::before {
+  content: "•";
+  color: #2563eb;
+  position: absolute;
+  left: 0;
+}
+
+/* --------------------
+   Footer
+-------------------- */
+.footer {
+  text-align: center;
+  color: #6b7280;
+  font-size: 0.85rem;
+  margin-top: 2rem;
+  padding-bottom: 1.5rem;
+}
+
+/* --------------------
+   Loading Overlay
+-------------------- */
+.loading {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 96px;
+  height: 96px;
+  opacity: 0.9;
+  z-index: 1000;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,100% { opacity: 0.85; transform: translate(-50%, -50%) scale(1); }
+  50% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+}
+
+/* --------------------
+   Overlay / Scanner
+-------------------- */
+.overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.0);
+  pointer-events: none;
+  transition: opacity 0.25s;
+  opacity: 0;
+  z-index: 20;
+}
+
+.overlay.visible {
+  opacity: 1;
+}
+
+.overlay img {
+  max-width: 80vw;
+  max-height: 70vh;
+  filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3));
+}
+
+.overlay .tag {
+  position: fixed;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255,255,255,0.9);
+  padding: 6px 12px;
+  border-radius: 12px;
+  border: 1px solid #ddd;
+  color: #111;
+  font-weight: 600;
+}
+
+/* --------------------
+   Floating Buttons / Links
+-------------------- */
+.floating-btn {
+  position: fixed;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+  z-index: 50;
+}
+
+.floating-link {
+  position: fixed;
+  left: 12px;
+  top: 12px;
+  background: rgba(255,255,255,0.9);
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  text-decoration: none;
+  color: #111;
+  z-index: 50;
+  font-weight: 500;
+}
+.floating-link:hover { background: #f3f4f6; }
+
+/* --------------------
+   Responsive
+-------------------- */
+@media (max-width: 640px) {
+  header h1 {
+    font-size: 1.3rem;
+  }
+  .card {
+    padding: 1rem;
+  }
+  .button {
+    font-size: 0.95rem;
+  }
+}
