@@ -2,123 +2,614 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>任務一：濟時篇｜圖書館無限城冒險</title>
-  <meta name="theme-color" content="#ffffff" />
+  <title>任務一｜學院之心 AR 掃描</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+
+  <!-- A-Frame + MindAR：整頁共用一次 -->
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.3/dist/mindar-image-aframe.prod.js"></script>
+
   <style>
-    :root{--bg:#f8fafc;--text:#0f172a;--muted:#64748b;--panel:#ffffff;--line:#e5e7eb;--brand:#2563eb;--brand-2:#22c55e;--radius:16px;--shadow:0 10px 25px rgba(15,23,42,.08);--ring:rgba(37,99,235,.25);}
-    *{box-sizing:border-box;}
-    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica Neue,Arial;color:var(--text);background:var(--bg);display:grid;grid-template-rows:auto auto 1fr;min-height:100vh;}
-    header{padding:20px 16px 4px;}
-    header h1{margin:0;font-size:clamp(20px,4.2vw,28px);font-weight:800;}
-    .progress-wrap{padding:8px 16px 14px;}
-    .steps{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:10px;}
-    .step{display:grid;place-items:center;gap:6px;color:var(--muted);font-size:11px;}
-    .step .dot{width:28px;height:28px;border-radius:999px;display:grid;place-items:center;font-weight:800;background:#fff;border:1px solid var(--line);box-shadow:0 0 0 0 var(--ring);transition:.18s;}
-    .step.active .dot{background:linear-gradient(180deg,var(--brand),#60a5fa);color:#fff;border-color:transparent;box-shadow:0 0 0 6px var(--ring);}
-    .bar{width:100%;height:8px;background:#e5e7eb;border-radius:999px;overflow:hidden;}
-    .bar>i{display:block;height:100%;width:var(--p,0%);background:linear-gradient(90deg,var(--brand),var(--brand-2));transition:width .35s ease;}
-    main{padding:16px;display:grid;gap:20px;}
-    section{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;}
-    .map-area{margin-top:20px;}
-    .map-wrap{position:relative;max-width:100%;margin-top:16px;}
-    .map-wrap img.map-img{width:100%;height:auto;border-radius:12px;box-shadow:0 6px 16px rgba(0,0,0,.1);}
-    .hotgrid{position:absolute;inset:0;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(3,1fr);gap:4px;pointer-events:none;}
-    .hotspot{position:relative;display:flex;align-items:center;justify-content:center;pointer-events:auto;}
-    .hotspot a{display:inline-flex;align-items:center;gap:8px;padding:10px 12px;border-radius:999px;background:rgba(255,255,255,.85);border:1px solid var(--line);box-shadow:0 4px 12px rgba(0,0,0,.12);backdrop-filter:blur(6px);font-weight:800;color:var(--text);text-decoration:none;}
-    .hotspot a .num{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:999px;background:linear-gradient(180deg,var(--brand),#60a5fa);color:#fff;font-size:12px;}
-    .hotspot a:hover{transform:translateY(-1px);}
+    :root { --vh: 1vh; }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: #0b1020;
+      color: #f9fafb;
+      font-family: system-ui,-apple-system,"Noto Sans TC",sans-serif;
+    }
+
+    body {
+      min-height: calc(var(--vh) * 100);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ===== 頁面基本佈局 ===== */
+    header {
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(148,163,184,.4);
+      background: radial-gradient(circle at top left,#1e293b,#020617);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    header p {
+      margin: 4px 0 0;
+      font-size: 13px;
+      color: #cbd5f5;
+    }
+
+    main {
+      flex: 1;
+      padding: 16px;
+    }
+
+    .mission-layout {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 16px;
+    }
+
+    @media (max-width: 900px) {
+      .mission-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* ===== 任務地圖區（左側） ===== */
+    .map-card {
+      background: linear-gradient(135deg,#020617,#020617,#111827);
+      border-radius: 16px;
+      padding: 16px;
+      border: 1px solid rgba(148,163,184,.3);
+      box-shadow: 0 18px 45px rgba(15,23,42,.75);
+    }
+
+    .map-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .map-subtitle {
+      font-size: 13px;
+      color: #9ca3af;
+      margin-bottom: 12px;
+    }
+
+    /* 這裡可以換成你自己的地圖圖片 */
+    .map-area {
+      position: relative;
+      border-radius: 12px;
+      background: radial-gradient(circle at top,#1d283a,#020617);
+      padding: 12px;
+      min-height: 260px;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+
+    .map-placeholder {
+      width: 100%;
+      max-width: 420px;
+      aspect-ratio: 4/3;
+      border-radius: 16px;
+      border: 1px dashed rgba(148,163,184,.6);
+      position: relative;
+    }
+
+    /* 六個熱點按鈕（代替原本 SB MAP 的 clickable 區） */
+    .spot {
+      position: absolute;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 72px;
+      height: 72px;
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,.8);
+      background: radial-gradient(circle at top,#1f2937,#020617);
+      color: #e5e7eb;
+      font-size: 13px;
+      text-align: center;
+      padding: 4px;
+      cursor: pointer;
+      transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+    }
+
+    .spot:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(15,23,42,.7);
+      border-color: #60a5fa;
+    }
+
+    .spot span {
+      display: block;
+      line-height: 1.3;
+    }
+
+    /* 大概擺放：你可以之後微調位置百分比 */
+    .spot.s12 { left: 15%; top: 20%; } /* 12織 */
+    .spot.s06 { left: 15%; top: 55%; } /* 06理 */
+    .spot.s10 { left: 30%; top: 82%; } /* 10社 */
+    .spot.s11 { right: 15%; top: 20%; }/* 11管 */
+    .spot.s03 { right: 18%; top: 52%; }/* 03傳 */
+    .spot.s09 { right: 30%; top: 82%; }/* 09法 */
+
+    /* 若已完成可以上個標記（之後可用 JS 加 class 完成） */
+    .spot.done {
+      border-color: #22c55e;
+      box-shadow: 0 0 0 1px rgba(34,197,94,.4);
+    }
+
+    /* ===== 說明／提示區（右側） ===== */
+    .info-card {
+      background: radial-gradient(circle at top,#0f172a,#020617);
+      border-radius: 16px;
+      padding: 16px;
+      border: 1px solid rgba(148,163,184,.3);
+    }
+
+    .info-card h2 {
+      margin: 0 0 8px;
+      font-size: 16px;
+    }
+
+    .info-card p {
+      margin: 0 0 6px;
+      font-size: 13px;
+      color: #e5e7eb;
+    }
+
+    .info-card ul {
+      margin: 8px 0 0 18px;
+      padding: 0;
+      font-size: 13px;
+      color: #d1d5db;
+    }
+
+    .info-card li + li {
+      margin-top: 4px;
+    }
+
+    .info-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: rgba(37,99,235,.3);
+      font-size: 11px;
+      margin-bottom: 4px;
+    }
+
+    /* ===== AR 掃描器 Overlay（方式 B 的重點） ===== */
+    .scanner-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 4000;
+      display: none; /* 預設關閉 */
+      background: #000;
+    }
+
+    .scanner-overlay.active {
+      display: block;
+    }
+
+    /* 頂部 HUD */
+    .scan-topbar {
+      position: fixed;
+      left: 0;
+      right: 0;
+      top: 0;
+      z-index: 4200;
+      padding: 10px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: linear-gradient(180deg,#f5f5f5,#ffffffee);
+      box-sizing: border-box;
+      color: #111827;
+    }
+
+    .scan-title {
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .scan-close {
+      border: none;
+      border-radius: 999px;
+      padding: 6px 12px;
+      background: #003366;
+      color: #fff;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    /* 中央白框 + PNG */
+    .scan-frame-wrap {
+      position: fixed;
+      inset: 0;
+      z-index: 4100;
+      display: grid;
+      place-items: center;
+      pointer-events: none;
+    }
+
+    .scan-frame {
+      width: min(70vw, 420px);
+      aspect-ratio: 1/1;
+      border-radius: 24px;
+      border: 4px solid #ffffff;
+      position: relative;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+
+    .corner {
+      position: absolute;
+      width: 26px;
+      height: 26px;
+      border: 4px solid #ffffff;
+    }
+    .corner.tl{left:-2px;top:-2px;border-right:none;border-bottom:none;}
+    .corner.tr{right:-2px;top:-2px;border-left:none;border-bottom:none;}
+    .corner.bl{left:-2px;bottom:-2px;border-right:none;border-top:none;}
+    .corner.br{right:-2px;bottom:-2px;border-left:none;border-top:none;}
+
+    .scan-frame img {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      max-width: 80%;
+      max-height: 80%;
+      object-fit: contain;
+      pointer-events: none;
+    }
+
+    /* 狀態提示 */
+    .scan-status {
+      position: fixed;
+      left: 50%;
+      bottom: 14px;
+      transform: translateX(-50%);
+      z-index: 4200;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      color: #fff;
+      background: rgba(0,0,0,.6);
+      max-width: 90vw;
+      text-align: center;
+    }
+
+    /* MindAR / video 全螢幕鋪滿在背景層 */
+    #arLayer {
+      position: fixed;
+      inset: 0;
+      z-index: 4000;
+      background: #000;
+    }
+
+    a-scene {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      background: transparent !important;
+    }
+
+    video, canvas, .a-canvas {
+      position: fixed !important;
+      left: 0 !important;
+      top: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      object-fit: cover !important;
+      background: transparent !important;
+    }
+
+    .a-enter-vr,.a-enter-ar,
+    .a-enter-vr-button,.a-enter-ar-button {
+      display: none !important;
+    }
+
+    /* 完全隱藏 MindAR 預設 UI */
+    .mindar-ui-overlay,
+    .mindar-ui-scanning,
+    .mindar-ui-processing,
+    .mindar-ui-loading,
+    .mindar-ui-error {
+      display: none !important;
+      opacity: 0 !important;
+      visibility: hidden !important;
+    }
   </style>
 </head>
 <body>
-  <header><h1>任務一：濟時篇</h1></header>
-
-  <section class="progress-wrap" aria-label="任務進度">
-    <div class="steps" id="steps">
-      <div class="step" data-step="1"><div class="dot">1</div>首頁</div>
-      <div class="step active" data-step="2"><div class="dot">2</div>任務一</div>
-      <div class="step" data-step="3"><div class="dot">3</div>任務二</div>
-      <div class="step" data-step="4"><div class="dot">4</div>任務三</div>
-      <div class="step" data-step="5"><div class="dot">5</div>工商</div>
-      <div class="step" data-step="6"><div class="dot">6</div>完成</div>
-    </div>
-    <div class="bar"><i id="bar"></i></div>
-  </section>
+  <header>
+    <h1>任務一｜學院之心</h1>
+    <p>請依提示尋找對應學院的「學院之心」圖案，點選地圖上的學院即可開啟 AR 掃描。</p>
+  </header>
 
   <main>
-    <section>
-      <h2>任務一：濟時篇</h2>
-      <p>如今，輔大各個學院被不明力量所侵蝕，必須重新點亮圖書館內的學院之心幫助學院奪回力量。</p>
-      <p>還好初代戒律與維序的院務長—費濟時，留下了濟時樓虛幻與現實之隙的地圖。</p>
-      <p>請利用此地圖找尋在濟時樓內的學院之心，重新點亮他們，讓輔大的學院恢復力量吧！</p>
+    <div class="mission-layout">
+      <!-- 左：地圖 + 六個學院按鈕 -->
+      <section class="map-card">
+        <div class="map-title">濟時樓探索之路</div>
+        <div class="map-subtitle">點選學院標記，即可開啟 AR 掃描對應的學院之心。</div>
 
-      <div class="map-area">
-        <div class="map-wrap" id="sbmap">
-          <img class="map-img" src="../icon/Universal/SBmap.jpg?v=4" alt="濟時樓SB地圖" />
-          <div class="hotgrid">
-            <!-- 左上=12織 → idx=11 -->
-            <div class="hotspot" style="grid-area:1/1;justify-content:flex-start;padding-left:8px;">
-              <a href="#" data-target="12織" data-frame="12織.png" data-idx="11"><span class="num">1</span><span>12織</span></a>
-            </div>
-            <!-- 左中=06理 → idx=5 -->
-            <div class="hotspot" style="grid-area:2/1;justify-content:flex-start;padding-left:8px;">
-              <a href="#" data-target="06理" data-frame="06理.png" data-idx="5"><span class="num">3</span><span>06理</span></a>
-            </div>
-            <!-- 左下=10社 → idx=9 -->
-            <div class="hotspot" style="grid-area:3/1;justify-content:flex-start;padding-left:8px;">
-              <a href="#" data-target="10社" data-frame="10社.png" data-idx="9"><span class="num">5</span><span>10社</span></a>
-            </div>
+        <div class="map-area">
+          <div class="map-placeholder">
+            <!-- 這裡是六個熱區，可依 SB MAP 的實際位置調整百分比 -->
 
-            <!-- 右上=11管 → idx=10 -->
-            <div class="hotspot" style="grid-area:1/2;justify-content:flex-end;padding-right:8px;">
-              <a href="#" data-target="11管" data-frame="11管.png" data-idx="10"><span class="num">2</span><span>11管</span></a>
-            </div>
-            <!-- 右中=03傳 → idx=2 -->
-            <div class="hotspot" style="grid-area:2/2;justify-content:flex-end;padding-right:8px;">
-              <a href="#" data-target="03傳" data-frame="03傳.png" data-idx="2"><span class="num">4</span><span>03傳</span></a>
-            </div>
-            <!-- 右下=09法 → idx=8 -->
-            <div class="hotspot" style="grid-area:3/2;justify-content:flex-end;padding-right:8px;">
-              <a href="#" data-target="09法" data-frame="09法.png" data-idx="8"><span class="num">6</span><span>09法</span></a>
-            </div>
+            <!-- 左上：12織 -->
+            <button
+              class="spot s12"
+              data-target="12織"
+              data-idx="11"
+              data-frame="icon/png/12織.png">
+              <span>12織</span>
+            </button>
+
+            <!-- 左中：06理 -->
+            <button
+              class="spot s06"
+              data-target="06理"
+              data-idx="5"
+              data-frame="icon/png/06理.png">
+              <span>06理</span>
+            </button>
+
+            <!-- 左下：10社 -->
+            <button
+              class="spot s10"
+              data-target="10社"
+              data-idx="9"
+              data-frame="icon/png/10社.png">
+              <span>10社</span>
+            </button>
+
+            <!-- 右上：11管 -->
+            <button
+              class="spot s11"
+              data-target="11管"
+              data-idx="10"
+              data-frame="icon/png/11管.png">
+              <span>11管</span>
+            </button>
+
+            <!-- 右中：03傳 -->
+            <button
+              class="spot s03"
+              data-target="03傳"
+              data-idx="2"
+              data-frame="icon/png/03傳.png">
+              <span>03傳</span>
+            </button>
+
+            <!-- 右下：09法 -->
+            <button
+              class="spot s09"
+              data-target="09法"
+              data-idx="8"
+              data-frame="icon/png/09法.png">
+              <span>09法</span>
+            </button>
           </div>
         </div>
-        <noscript>
-          <p>
-            <a href="../scanner.html?target=12%E7%B9%94&frame=icon/png/12%E7%B9%94.png&idx=11&step=2">12織</a> ·
-            <a href="../scanner.html?target=06%E7%90%86&frame=icon/png/06%E7%90%86.png&idx=5&step=2">06理</a> ·
-            <a href="../scanner.html?target=10%E7%A4%BE&frame=icon/png/10%E7%A4%BE.png&idx=9&step=2">10社</a> ·
-            <a href="../scanner.html?target=11%E7%AE%A1&frame=icon/png/11%E7%AE%A1.png&idx=10&step=2">11管</a> ·
-            <a href="../scanner.html?target=03%E5%82%B3&frame=icon/png/03%E5%82%B3.png&idx=2&step=2">03傳</a> ·
-            <a href="../scanner.html?target=09%E6%B3%95&frame=icon/png/09%E6%B3%95.png&idx=8&step=2">09法</a>
-          </p>
-        </noscript>
-      </div>
-    </section>
+      </section>
+
+      <!-- 右：說明文字 -->
+      <section class="info-card">
+        <div class="info-tag">任務提示</div>
+        <h2>學院之心 掃描說明</h2>
+        <p>．點選左側地圖上的學院標記，即會開啟 AR 掃描畫面。</p>
+        <p>．請將卡片或海報上的「學院之心」圖案，對準畫面中的白色掃描框。</p>
+        <ul>
+          <li>12織 → 對應 targetIndex 11</li>
+          <li>06理 → 對應 targetIndex 5</li>
+          <li>10社 → 對應 targetIndex 9</li>
+          <li>11管 → 對應 targetIndex 10</li>
+          <li>03傳 → 對應 targetIndex 2</li>
+          <li>09法 → 對應 targetIndex 8</li>
+        </ul>
+        <p style="margin-top:10px;">※ 若無法啟動相機，請確認已允許瀏覽器使用相機，或改用其他瀏覽器測試。</p>
+      </section>
+    </div>
   </main>
 
-  <script>
-    const TOTAL_STEPS=6, CURRENT_STEP=1;
-    const steps=document.querySelectorAll('.step'), bar=document.getElementById('bar');
-    steps.forEach((el,i)=>{el.classList.remove('active'); if(i===CURRENT_STEP) el.classList.add('active');});
-    const percent=Math.round((CURRENT_STEP/(TOTAL_STEPS-1))*100);
-    bar.style.setProperty('--p', percent+'%');
-    bar.parentElement.setAttribute('aria-valuenow', String(percent));
+  <!-- ===== AR 掃描 Overlay（方式 B 核心） ===== -->
+  <div id="scannerOverlay" class="scanner-overlay">
+    <!-- 相機 + MindAR 畫面 -->
+    <div id="arLayer">
+      <a-scene
+        id="arScene"
+        mindar-image="imageTargetSrc: ../targets.mind?v=64; autoStart: false; maxTrack: 1; warmupTolerance:5; uiScanning:no; uiLoading:no; uiError:no"
+        embedded
+        vr-mode-ui="enabled: false"
+        device-orientation-permission-ui="enabled: false">
 
-    document.querySelectorAll('.hotspot a').forEach(a=>{
-      a.addEventListener('click', (e)=>{
+        <a-camera position="0 0 0" look-controls="enabled:false"></a-camera>
+
+        <!-- 0~11：十二個 target anchor（不一定全部用得到） -->
+        <a-entity id="anchor-0"  mindar-image-target="targetIndex: 0"></a-entity>
+        <a-entity id="anchor-1"  mindar-image-target="targetIndex: 1"></a-entity>
+        <a-entity id="anchor-2"  mindar-image-target="targetIndex: 2"></a-entity>
+        <a-entity id="anchor-3"  mindar-image-target="targetIndex: 3"></a-entity>
+        <a-entity id="anchor-4"  mindar-image-target="targetIndex: 4"></a-entity>
+        <a-entity id="anchor-5"  mindar-image-target="targetIndex: 5"></a-entity>
+        <a-entity id="anchor-6"  mindar-image-target="targetIndex: 6"></a-entity>
+        <a-entity id="anchor-7"  mindar-image-target="targetIndex: 7"></a-entity>
+        <a-entity id="anchor-8"  mindar-image-target="targetIndex: 8"></a-entity>
+        <a-entity id="anchor-9"  mindar-image-target="targetIndex: 9"></a-entity>
+        <a-entity id="anchor-10" mindar-image-target="targetIndex:10"></a-entity>
+        <a-entity id="anchor-11" mindar-image-target="targetIndex:11"></a-entity>
+      </a-scene>
+    </div>
+
+    <!-- HUD + 白框 + PNG + 狀態列 -->
+    <div class="scan-topbar">
+      <div class="scan-title" id="scanTitle">請對準：學院之心</div>
+      <button type="button" class="scan-close" id="scanClose">關閉掃描</button>
+    </div>
+
+    <div class="scan-frame-wrap">
+      <div class="scan-frame">
+        <div class="corner tl"></div>
+        <div class="corner tr"></div>
+        <div class="corner bl"></div>
+        <div class="corner br"></div>
+        <img id="scanFrameImage" alt="target preview" />
+      </div>
+    </div>
+
+    <div class="scan-status" id="scanStatus">正在準備 AR 掃描…</div>
+  </div>
+
+  <script>
+    // ===== 100vh 修正（手機避免跳動） =====
+    function setVh(){
+      document.documentElement.style.setProperty('--vh', window.innerHeight * 0.01 + 'px');
+    }
+    setVh();
+    window.addEventListener('resize', setVh);
+
+    // ===== DOM 取得 =====
+    const scannerOverlay = document.getElementById('scannerOverlay');
+    const scanTitle      = document.getElementById('scanTitle');
+    const scanClose      = document.getElementById('scanClose');
+    const scanStatus     = document.getElementById('scanStatus');
+    const scanFrameImage = document.getElementById('scanFrameImage');
+    const arScene        = document.getElementById('arScene');
+
+    const spotButtons = document.querySelectorAll('.spot');
+
+    let currentTargetName = '';
+    let currentIdx = null;
+    let currentAnchor = null;
+    let isScanning = false;
+
+    const allAnchors = Array.from(arScene.querySelectorAll('[mindar-image-target]'));
+
+    function removeAnchorListeners() {
+      if (!allAnchors.length) return;
+      allAnchors.forEach(a => {
+        a.removeEventListener('targetFound', onTargetFound);
+        a.removeEventListener('targetLost', onTargetLost);
+      });
+    }
+
+    function onTargetFound() {
+      scanStatus.textContent = '已辨識到「' + (currentTargetName || '目標') + '」！';
+      // 這裡你可以加上：更新左側地圖的完成狀態
+      // 例如：對應按鈕加上 .done class
+      markSpotDone(currentIdx);
+
+      // 稍微停留一下讓使用者看到，再關閉掃描器
+      setTimeout(()=> {
+        stopScanner();
+      }, 700);
+    }
+
+    function onTargetLost() {
+      if (!isScanning) return;
+      scanStatus.textContent = '目標遺失，請再對準「' + (currentTargetName || '目標') + '」。';
+    }
+
+    function markSpotDone(idx){
+      if (idx == null) return;
+      const el = document.querySelector('.spot[data-idx="' + idx + '"]');
+      if (el) el.classList.add('done');
+    }
+
+    function startScanner(targetName, idx, framePath){
+      const sys = arScene.systems['mindar-image-system'];
+      if (!sys || typeof sys.start !== 'function') {
+        scanStatus.textContent = 'AR 系統尚未準備完成，請稍後再試。';
+        return;
+      }
+
+      currentTargetName = targetName;
+      currentIdx = idx;
+
+      scanTitle.textContent = '請對準：' + targetName;
+      scanStatus.textContent = '正在啟動相機…';
+
+      // 設定掃描框內的 PNG
+      if (framePath) {
+        scanFrameImage.src = framePath;
+      } else {
+        scanFrameImage.removeAttribute('src');
+      }
+
+      // 顯示 Overlay
+      scannerOverlay.classList.add('active');
+      isScanning = true;
+
+      // 綁定指定 anchor
+      removeAnchorListeners();
+      currentAnchor = document.getElementById('anchor-' + idx);
+      if (currentAnchor) {
+        currentAnchor.addEventListener('targetFound', onTargetFound);
+        currentAnchor.addEventListener('targetLost', onTargetLost);
+      }
+
+      try{
+        // ⚠️ 重要：在「同一個 click 事件」中呼叫 start()，以符合瀏覽器相機規則
+        sys.start();
+        scanStatus.textContent = '請對準「' + targetName + '」的學院之心圖樣';
+      }catch(e){
+        console.error(e);
+        scanStatus.textContent = '相機啟動失敗，請確認權限或改用其他瀏覽器。';
+        isScanning = false;
+        scannerOverlay.classList.remove('active');
+      }
+    }
+
+    function stopScanner(){
+      const sys = arScene.systems['mindar-image-system'];
+      if (sys && typeof sys.stop === 'function') {
+        try { sys.stop(); } catch(e){ console.error(e); }
+      }
+      isScanning = false;
+      scannerOverlay.classList.remove('active');
+    }
+
+    // 關閉按鈕
+    scanClose.addEventListener('click', () => {
+      stopScanner();
+    });
+
+    // 六個學院按鈕 → 直接「同頁啟動 AR 掃描」
+    spotButtons.forEach(btn => {
+      btn.addEventListener('click', (e) => {
         e.preventDefault();
-        const target = a.dataset.target || '';
-        const frame  = a.dataset.frame  || '';
-        const idx    = a.dataset.idx    || '';
-        const url = new URL('../scanner.html', location.href);
-        url.searchParams.set('target', target);
-        url.searchParams.set('frame', `icon/png/${frame}`);
-        url.searchParams.set('idx', idx);      // ← 直接傳 MindAR index
-        url.searchParams.set('step', '2');
-        location.assign(url.toString());
+        const target = btn.dataset.target || '';
+        const idx    = Number(btn.dataset.idx);
+        const frame  = btn.dataset.frame ? ('../' + btn.dataset.frame) : '';
+
+        if (!target || Number.isNaN(idx)) {
+          alert('此按鈕尚未設定有效的 target / idx');
+          return;
+        }
+
+        startScanner(target, idx, frame);
       });
     });
+
+    // （可選）若要依據網址參數自動標記完成的學院，可在這裡讀 location.search
   </script>
 </body>
 </html>
