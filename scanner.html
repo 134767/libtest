@@ -1,250 +1,128 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
-<title>掃描器｜圖書館無限城冒險</title>
+  <meta charset="utf-8" />
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>濟時樓 AR 掃描 - 12織</title>
 
-<!-- A-Frame & MindAR -->
-<script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.3/dist/mindar-image-aframe.prod.js"></script>
+  <!-- A-Frame + MindAR -->
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.3/dist/mindar-image-aframe.prod.js"></script>
 
-<style>
-  :root{ --vh: 1vh; }
-  *{ box-sizing:border-box; }
+  <style>
+    :root {
+      --safe-top: env(safe-area-inset-top);
+      --safe-right: env(safe-area-inset-right);
+      --safe-bottom: env(safe-area-inset-bottom);
+      --safe-left: env(safe-area-inset-left);
+    }
 
-  html,body{
-    margin:0;
-    height:100dvh;                 /* 新版 */
-    height:calc(var(--vh) * 100);  /* 舊版保險 */
-    background:transparent !important;
-    overflow:hidden;
-    -webkit-tap-highlight-color: transparent;
-  }
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: #000; /* 背景改黑，避免白牆感 */
+      font-family: system-ui, -apple-system, BlinkMacSystemFont,
+                   "Noto Sans TC", sans-serif;
+    }
 
-  /* —— 讓畫布「永遠」透明 —— */
-  canvas, .a-canvas, .a-scene, .a-scene canvas, .a-canvas canvas{
-    background:transparent !important;
-    background-color:transparent !important;
-  }
-  a-scene{
-    display:block; /* 自動開啟掃描，不需要開始鍵 */
-    width:100vw; height:100dvh; height:calc(var(--vh) * 100);
-    background:transparent !important;
-  }
+    /* 整體版面：上方標題 + 下方 AR 區塊 */
+    .page {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
 
-  /* —— 頂部 HUD（絕不被裁切） —— */
-  #hud{
-    position:fixed; left:0; right:0; top:0;
-    /* padding 會在 JS 依 VisualViewport 再動態加碼 */
-    padding:12px 12px 10px 12px;
-    color:#fff; font-weight:700; z-index:12;
-    display:flex; align-items:center; justify-content:space-between; gap:8px;
-    background:linear-gradient(180deg, rgba(0,0,0,.5), transparent);
-    pointer-events:none; /* 讓相機點擊不中斷；讓按鈕仍可點 */
-  }
-  #backBtn{ pointer-events:auto; }
-  .btn{
-    padding:10px 14px; border-radius:10px; border:1px solid #2b3345; background:#13203a; color:#fff;
-    font-weight:800; text-decoration:none; white-space:nowrap;
-  }
+    .header {
+      padding: calc(12px + var(--safe-top)) 16px 8px;
+      background: linear-gradient(180deg, #f5f5f5, #ffffff);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-sizing: border-box;
+    }
 
-  /* —— 預設 QR 掃描框 —— */
-  #qrframe{
-    position:fixed; left:50%; top:50%;
-    width:min(68vw, 420px); aspect-ratio:1/1;
-    transform:translate(-50%,-50%);
-    z-index:11; pointer-events:none;
-    /* 中性淡遮罩可見：可依需要關掉 */
-    box-shadow:0 0 0 9999px rgba(0,0,0,.12) inset;
-    border-radius:16px;
-  }
-  /* 四角 */
-  #qrframe::before, #qrframe::after{
-    content:""; position:absolute; inset:0; border-radius:16px;
-    border:0 solid #fff;
-    pointer-events:none;
-  }
-  /* 上左、上右、下左、下右四個角用 8 個線段拼出來 */
-  .corner{ position:absolute; width:28px; height:28px; }
-  .corner::before, .corner::after{
-    content:""; position:absolute; background:#fff; display:block;
-  }
-  /* 每個角的水平/垂直線段（厚度 4px） */
-  .corner.h::before{ width:28px; height:4px; left:0; top:0; border-radius:4px; }
-  .corner.v::after { width:4px;  height:28px; left:0; top:0; border-radius:4px; }
+    .header-title {
+      font-size: 18px;
+      font-weight: 700;
+    }
 
-  /* 角落定位 */
-  .tl{ left:0; top:0; transform:translate(-4px,-4px); }
-  .tr{ right:0; top:0; transform:translate(4px,-4px) rotate(90deg); }
-  .br{ right:0; bottom:0; transform:translate(4px,4px) rotate(180deg); }
-  .bl{ left:0; bottom:0; transform:translate(-4px,4px) rotate(270deg); }
+    .btn-back {
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: none;
+      font-size: 14px;
+      background: #003366;
+      color: #fff;
+      cursor: pointer;
+      white-space: nowrap;
+    }
 
-  /* —— 提示/吐司 —— */
-  #toast{
-    position:fixed; left:50%; bottom:22px; transform:translateX(-50%);
-    background:rgba(0,0,0,.72); color:#fff; padding:10px 14px; border-radius:12px;
-    font-weight:700; display:none; z-index:12;
-  }
+    .main {
+      position: relative;
+      flex: 1;
+      overflow: hidden;
+    }
 
-  /* —— 徹底隱藏 VR/AR 按鈕、等待圈、掃描提示 —— */
-  .a-enter-vr-button, .a-enter-vr, .a-enter-ar-button, .a-enter-ar,
-  .a-loading, .a-loader, .a-loader-title, .a-loading .spinner,
-  .mindar-ui-overlay, .mindar-ui-loading, .mindar-ui-scanning, .mindar-ui-compatibility,
-  .mindar-ui-compatibility .content, .scanline, #scanline{
-    display:none !important; visibility:hidden !important; opacity:0 !important;
-  }
-</style>
+    /* AR 場景塞滿 main，高度就是 header 下面到螢幕底 */
+    #scene {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* ✅ 預設 QR 掃描框：只有框線，沒有白底 */
+    .scanner-frame {
+      position: absolute;
+      inset: 0;
+      margin: auto;
+      width: 70vw;
+      max-width: 420px;
+      aspect-ratio: 1 / 1;
+      border-radius: 24px;
+      border: 4px solid rgba(255, 255, 255, 0.95);
+      background: transparent;   /* 關鍵：不填色，完全透明 */
+      box-sizing: border-box;
+      pointer-events: none;      /* 不擋觸控 */
+    }
+  </style>
 </head>
 <body>
+  <div class="page">
+    <!-- 上方標題列（按鈕不會再被裁切） -->
+    <div class="header">
+      <div class="header-title">請對準：12織</div>
+      <!-- 這裡依你的實際路徑調整，例如 ../index.html 或 pages/mission1.html -->
+      <button class="btn-back" onclick="window.location.href='index.html';">
+        返回
+      </button>
+    </div>
 
-<div id="hud">
-  <span id="label" style="user-select:none">載入中…</span>
-  <a id="backBtn" class="btn" href="#">返回任務一</a>
-</div>
+    <!-- AR 區域 -->
+    <div class="main">
+      <a-scene id="scene"
+        mindar-image="imageTargetSrc: targets.mind"
+        embedded
+        color-space="sRGB"
+        renderer="colorManagement: true, physicallyCorrectLights; alpha: true"
+        vr-mode-ui="enabled: false"
+        device-orientation-permission-ui="enabled: false">
 
-<!-- 預設 QR 框，不用 PNG -->
-<div id="qrframe" aria-hidden="true">
-  <div class="corner tl"><span class="corner h"></span><span class="corner v"></span></div>
-  <div class="corner tr"><span class="corner h"></span><span class="corner v"></span></div>
-  <div class="corner br"><span class="corner h"></span><span class="corner v"></span></div>
-  <div class="corner bl"><span class="corner h"></span><span class="corner v"></span></div>
-</div>
+        <a-camera look-controls="enabled: false"></a-camera>
 
-<div id="toast"></div>
+        <!-- 12織 對應的 targetIndex，依你 targets.mind 的順序修改 -->
+        <a-entity mindar-image-target="targetIndex: 0">
+          <!-- 這裡可以放你的 3D 或 PNG，如果暫時不要就用透明平面佔位 -->
+          <a-plane position="0 0 0"
+                   width="1" height="1"
+                   material="opacity: 0">
+          </a-plane>
+        </a-entity>
+      </a-scene>
 
-<a-scene id="scene"
-  mindar-image="imageTargetSrc: ./targets.mind"
-  embedded
-  renderer="alpha:true; colorManagement:true; physicallyCorrectLights:true; precision:mediump"
-  background="color: transparent"
-  color-space="sRGB"
-  loading-screen="enabled:false"
-  vr-mode-ui="enabled:false"
-  device-orientation-permission-ui="enabled:false">
-
-  <a-camera position="0 0 0" look-controls="enabled:false"></a-camera>
-
-  <!-- 0..11：十二個目標 -->
-  <a-entity mindar-image-target="targetIndex: 0"  data-index="0"></a-entity>
-  <a-entity mindar-image-target="targetIndex: 1"  data-index="1"></a-entity>
-  <a-entity mindar-image-target="targetIndex: 2"  data-index="2"></a-entity>
-  <a-entity mindar-image-target="targetIndex: 3"  data-index="3"></a-entity>
-  <a-entity mindar-image-target="targetIndex: 4"  data-index="4"></a-entity>
-  <a-entity mindar-image-target="targetIndex: 5"  data-index="5"></a-entity>
-  <a-entity mindar-image-target="targetIndex: 6"  data-index="6"></a-entity>
-  <a-entity mindar-image-target="targetIndex: 7"  data-index="7"></a-entity>
-  <a-entity mindar-image-target="targetIndex: 8"  data-index="8"></a-entity>
-  <a-entity mindar-image-target="targetIndex: 9"  data-index="9"></a-entity>
-  <a-entity mindar-image-target="targetIndex: 10" data-index="10"></a-entity>
-  <a-entity mindar-image-target="targetIndex: 11" data-index="11"></a-entity>
-</a-scene>
-
-<script>
-  /* ========== 參數 ========== */
-  const qs     = new URLSearchParams(location.search);
-  const target = qs.get('target') || '';
-  const idx    = Number(qs.get('idx'));
-  const step   = Number(qs.get('step') || '1');
-
-  /* ========== 返回連結（自動推 repo 根目錄） ========== */
-  function getRepoBase(){
-    const segs = location.pathname.split('/').filter(Boolean);
-    return segs.length ? `/${segs[0]}/` : '/';
-  }
-  const backURL = getRepoBase() + 'pages/mission1.html';
-  backBtn.href  = backURL;
-
-  /* ========== 文字 ========== */
-  label.textContent = target ? `請對準：${target}` : '請對準指定圖案';
-
-  /* ========== 100vh 修正 ========== */
-  function setVh(){
-    document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
-  }
-  setVh(); window.addEventListener('resize', setVh);
-
-  /* ========== HUD 固定在可視區，不被裁切 ========== */
-  function pinHudToVV(){
-    const vv = window.visualViewport;
-    if (!vv) return;
-    const insetTop = vv.offsetTop;
-    const insetLeft = vv.offsetLeft;
-    const insetRight = Math.max(0, window.innerWidth - (vv.width + vv.offsetLeft));
-    hud.style.paddingLeft  = `calc(env(safe-area-inset-left,0px) + ${12 + insetLeft}px)`;
-    hud.style.paddingRight = `calc(env(safe-area-inset-right,0px) + ${12 + insetRight}px)`;
-    hud.style.paddingTop   = `${12 + insetTop}px`;
-  }
-  function centerQR(){
-    const qr = document.getElementById('qrframe');
-    const vv = window.visualViewport;
-    if (!vv || !qr) return;
-    const x = vv.width/2 + vv.offsetLeft;
-    const y = vv.height/2 + vv.offsetTop;
-    qr.style.left = x + 'px';
-    qr.style.top  = y + 'px';
-    qr.style.transform = 'translate(-50%,-50%)';
-  }
-  function placeUI(){ pinHudToVV(); centerQR(); }
-  placeUI();
-  if (window.visualViewport){
-    visualViewport.addEventListener('resize', placeUI);
-    visualViewport.addEventListener('scroll', placeUI);
-  }
-  window.addEventListener('orientationchange', ()=> setTimeout(placeUI, 250));
-
-  /* ========== 透明保險（修白底） ========== */
-  const scene = document.getElementById('scene');
-  function forceTransparent(){
-    try{
-      const r = scene.renderer;
-      if (r){
-        r.setClearAlpha(0);
-        if (r.setClearColor) r.setClearColor(0x000000, 0);
-        const c = r.domElement;
-        if (c){ c.style.background='transparent'; c.style.backgroundColor='transparent'; }
-      }
-    }catch(e){}
-  }
-
-  /* ========== 自動開始掃描 ========== */
-  scene.addEventListener('loaded', async ()=>{
-    forceTransparent();
-    try{
-      await scene.systems['mindar-image-system'].start();
-      forceTransparent(); // start 後再保險一次
-    }catch(e){
-      showToast('相機未能啟動（權限或硬體被占用）');
-    }
-  });
-
-  /* ========== 成功就自動返回任務一 ========== */
-  const toast = document.getElementById('toast');
-  function showToast(m){ toast.textContent=m; toast.style.display='block'; setTimeout(()=>toast.style.display='none',1200); }
-
-  const allTargets = Array.from(document.querySelectorAll('[mindar-image-target]'));
-  const chosen = allTargets.find(el => Number(el.dataset.index) === idx);
-
-  if (chosen){
-    chosen.addEventListener('targetFound', ()=>{
-      try{
-        localStorage.setItem(`sb_idx_${idx}`, 'true');
-        localStorage.setItem('scanner_step', String(step));
-      }catch(e){}
-      const url = new URL(backURL, location.origin);
-      url.searchParams.set('passed', String(idx));
-      if (target) url.searchParams.set('target', target);
-      location.replace(url.toString());
-    });
-    allTargets.forEach(el=>{
-      if (el===chosen) return;
-      el.addEventListener('targetFound', ()=> showToast('這不是指定圖案，請對準正確的圖。'));
-    });
-  }else{
-    showToast('未指定目標（idx），請返回上一頁重試。');
-  }
-
-  scene.addEventListener('arError', ()=> showToast('相機啟動失敗，請檢查權限或改用手機瀏覽器。'));
-</script>
+      <!-- ✅ 預設 QR 掃描框（無 PNG、無白色畫布） -->
+      <div class="scanner-frame"></div>
+    </div>
+  </div>
 </body>
 </html>
