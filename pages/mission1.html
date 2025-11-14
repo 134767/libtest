@@ -26,7 +26,7 @@
       color:var(--text);
       background:var(--bg);
       display:grid;
-      grid-template-rows:auto auto 1fr;
+      grid-template-rows:auto auto 1fr auto;
       min-height:100vh;
     }
     header{padding:20px 16px 4px;}
@@ -121,36 +121,39 @@
       justify-content:center;
       pointer-events:auto;
     }
-    /* ✅ 改成正方形、50% 透明度、文字上下兩列 */
+    /* 長方形按鈕，幾乎全透明 */
     .hotspot a{
       display:flex;
       flex-direction:column;
       align-items:center;
       justify-content:center;
-      width:min(32vw,120px);
-      aspect-ratio:1/1;
-      border-radius:16px;
-      background:rgba(255,255,255,0.5);
-      border:1px solid var(--line);
+
+      width:40%;
+      height:60px;
+
+      border-radius:12px;
+      background:rgba(255,255,255,0.01);
       box-shadow:0 4px 12px rgba(0,0,0,.12);
+      border:1px solid var(--line);
+
       backdrop-filter:blur(6px);
       font-weight:800;
       color:var(--text);
       text-decoration:none;
       text-align:center;
-      padding:8px;
+      padding:6px;
       transition:.15s;
     }
     .hotspot a:hover{
       transform:translateY(-1px);
     }
     .hotspot a .label-top{
-      font-size:13px;
+      font-size:50px;
       letter-spacing:.15em;
     }
     .hotspot a .label-bottom{
-      font-size:12px;
-      margin-top:4px;
+      font-size:50px;
+      margin-top:6px;
       white-space:nowrap;
     }
     /* 掃描完成的按鈕樣式 */
@@ -163,13 +166,13 @@
       opacity:.6;
       cursor:not-allowed;
     }
-    /* pass.png 蓋章在 hotspot 上方 */
+    /* pass.png 蓋章在 hotspot 上方（縮小） */
     .hotspot .pass-stamp{
       position:absolute;
       inset:50% auto auto 50%;
       transform:translate(-50%,-50%);
-      max-width:80%;
-      max-height:80%;
+      max-width:40%;
+      max-height:40%;
       pointer-events:none;
       display:block;
     }
@@ -301,9 +304,17 @@
     .mindar-ui-processing,
     .mindar-ui-loading,
     .mindar-ui-error{
-      display:none !important;
+      display:none !重要;
       opacity:0 !important;
       visibility:hidden !important;
+    }
+
+    /* 底部導覽按鈕容器 */
+    .nav-buttons{
+      margin:0 16px 16px;
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
     }
   </style>
 
@@ -337,47 +348,41 @@
         <div class="map-wrap" id="sbmap">
           <img class="map-img" src="../icon/Universal/SBmap.jpg?v=4" alt="濟時樓SB地圖" />
           <div class="hotgrid">
-            <!-- 左上=12織 → idx=11 / 織品之心 -->
+            <!-- 左上=12織 → idx=11 -->
             <div class="hotspot" style="grid-area:1/1;justify-content:flex-start;padding-left:8px;">
               <a href="#" data-target="12織" data-frame="12織.png" data-idx="11">
                 <span class="label-top">點燃</span>
-                <span class="label-bottom">織品之心</span>
               </a>
             </div>
-            <!-- 左中=06理 → idx=5 / 理工之心 -->
+            <!-- 左中=06理 → idx=5 -->
             <div class="hotspot" style="grid-area:2/1;justify-content:flex-start;padding-left:8px;">
               <a href="#" data-target="06理" data-frame="06理.png" data-idx="5">
                 <span class="label-top">點燃</span>
-                <span class="label-bottom">理工之心</span>
               </a>
             </div>
-            <!-- 左下=10社 → idx=9 / 社會之心 -->
+            <!-- 左下=10社 → idx=9 -->
             <div class="hotspot" style="grid-area:3/1;justify-content:flex-start;padding-left:8px;">
               <a href="#" data-target="10社" data-frame="10社.png" data-idx="9">
                 <span class="label-top">點燃</span>
-                <span class="label-bottom">社會之心</span>
               </a>
             </div>
 
-            <!-- 右上=11管 → idx=10 / 管理之心 -->
+            <!-- 右上=11管 → idx=10 -->
             <div class="hotspot" style="grid-area:1/2;justify-content:flex-end;padding-right:8px;">
               <a href="#" data-target="11管" data-frame="11管.png" data-idx="10">
                 <span class="label-top">點燃</span>
-                <span class="label-bottom">管理之心</span>
               </a>
             </div>
-            <!-- 右中=03傳 → idx=2 / 傳播之心 -->
+            <!-- 右中=03傳 → idx=2 -->
             <div class="hotspot" style="grid-area:2/2;justify-content:flex-end;padding-right:8px;">
               <a href="#" data-target="03傳" data-frame="03傳.png" data-idx="2">
                 <span class="label-top">點燃</span>
-                <span class="label-bottom">傳播之心</span>
               </a>
             </div>
-            <!-- 右下=09法 → idx=8 / 法律之心 -->
+            <!-- 右下=09法 → idx=8 -->
             <div class="hotspot" style="grid-area:3/2;justify-content:flex-end;padding-right:8px;">
               <a href="#" data-target="09法" data-frame="09法.png" data-idx="8">
                 <span class="label-top">點燃</span>
-                <span class="label-bottom">法律之心</span>
               </a>
             </div>
           </div>
@@ -479,6 +484,55 @@
 
     const allAnchors = Array.from(arScene.querySelectorAll('[mindar-image-target]'));
 
+    // === 通關進度保存（localStorage） ===
+    let passedSet = new Set();
+    const requiredIdxs = Array.from(hotButtons).map(a => String(a.dataset.idx));
+    let nextBtn = null;
+
+    function saveProgress(){
+      try{
+        const arr = Array.from(passedSet);
+        localStorage.setItem('mission1_passed', JSON.stringify(arr));
+      }catch(e){
+        console.error('saveProgress error', e);
+      }
+    }
+
+    function loadProgress(){
+      try{
+        const raw = localStorage.getItem('mission1_passed');
+        if(!raw) return;
+        const arr = JSON.parse(raw);
+        if(!Array.isArray(arr)) return;
+        arr.forEach(idx=>{
+          const idxStr = String(idx);
+          passedSet.add(idxStr);
+          // 用 markSpotDone 補上畫面
+          markSpotDone(idxStr, false); // 第二參數：是否跳過再次存檔
+        });
+      }catch(e){
+        console.error('loadProgress error', e);
+      }
+    }
+
+    function updateNextButtonLock(){
+      if(!nextBtn) return;
+      const allDone = requiredIdxs.every(idx => passedSet.has(idx));
+      if(allDone){
+        nextBtn.classList.remove('locked');
+        nextBtn.removeAttribute('aria-disabled');
+        nextBtn.style.pointerEvents = 'auto';
+        nextBtn.style.opacity = '1';
+        nextBtn.textContent = '繼續冒險 ➜';
+      }else{
+        nextBtn.classList.add('locked');
+        nextBtn.setAttribute('aria-disabled','true');
+        nextBtn.style.pointerEvents = 'none';
+        nextBtn.style.opacity = '.5';
+        nextBtn.textContent = '請先完成 6 處學院之心';
+      }
+    }
+
     function removeAnchorListeners(){
       allAnchors.forEach(a=>{
         a.removeEventListener('targetFound', onTargetFound);
@@ -498,9 +552,11 @@
     }
 
     // 掃描成功 → 按鈕加 passed + locked，並在 hotspot 上蓋 pass.png
-    function markSpotDone(idx){
+    // skipSave 用來在載入歷史紀錄時避免重複寫入 localStorage
+    function markSpotDone(idx, skipSave){
       if(idx == null) return;
-      const btn = document.querySelector('.hotspot a[data-idx="' + idx + '"]');
+      const idxStr = String(idx);
+      const btn = document.querySelector('.hotspot a[data-idx="' + idxStr + '"]');
       if(!btn) return;
       btn.classList.add('passed','locked');
 
@@ -515,6 +571,12 @@
           host.appendChild(stamp);
         }
       }
+
+      passedSet.add(idxStr);
+      if(!skipSave){
+        saveProgress();
+      }
+      updateNextButtonLock();
     }
 
     function startScanner(targetName, idx, framePath){
@@ -574,7 +636,7 @@
         e.preventDefault();
 
         if(a.classList.contains('locked')){
-          scanStatus.textContent = '此學院之心已完成認證，無需重複掃描。';
+          scanStatus.textContent = '已完成認證，無需重複掃描。';
           return;
         }
 
@@ -591,6 +653,48 @@
         startScanner(target, idx, framePath);
       });
     });
+
+    // 等整個頁面載入完成後，綁定「繼續冒險」按鈕並恢復紀錄
+    window.addEventListener('load', ()=>{
+      nextBtn = document.getElementById('btnNext');
+      loadProgress();
+      updateNextButtonLock();
+    });
   </script>
+
+  <!-- ===== 底部導航按鈕 ===== -->
+  <div class="nav-buttons">
+    <!-- 上一頁：返回首頁（進度透過 localStorage 保留） -->
+    <a href="../index.html" id="btnBack" style="
+      flex:1;
+      text-align:center;
+      padding:14px 0;
+      background:#e2e8f0;
+      border-radius:12px;
+      font-size:16px;
+      font-weight:700;
+      text-decoration:none;
+      color:#1e293b;
+      box-shadow:0 4px 10px rgba(0,0,0,.08);
+    ">
+      ⬅ 上一頁
+    </a>
+
+    <!-- 下一頁：前往彩蛋 missionXX.html（需 6 個地點全部完成才解鎖） -->
+    <a href="../pages/missionXX.html" id="btnNext" style="
+      flex:1;
+      text-align:center;
+      padding:14px 0;
+      background:#2563eb;
+      border-radius:12px;
+      font-size:16px;
+      font-weight:700;
+      text-decoration:none;
+      color:white;
+      box-shadow:0 4px 10px rgba(0,0,0,.15);
+    ">
+      繼續冒險 ➜
+    </a>
+  </div>
 </body>
 </html>
