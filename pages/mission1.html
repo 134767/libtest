@@ -159,7 +159,7 @@
       opacity:.6;
       cursor:not-allowed;
     }
-    /* pass.jpg 蓋章在 hotspot 上方 */
+    /* pass.png 蓋章在 hotspot 上方 */
     .hotspot .pass-stamp{
       position:absolute;
       inset:50% auto auto 50%;
@@ -302,7 +302,7 @@
       visibility:hidden !important;
     }
 
-    /* === 全站載入 loading 畫面（白畫布 + loading.jpg +「加載中」） === */
+    /* === 全站載入 loading 畫面（白畫布 + loading.png +「加載中」） === */
     .global-loading{
       position:fixed;
       inset:0;
@@ -337,9 +337,9 @@
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.3/dist/mindar-image-aframe.prod.js"></script>
 </head>
 <body>
-  <!-- ✅ 全頁載入白畫布 + loading.jpg +「加載中」 -->
+  <!-- ✅ 全頁載入白畫布 + loading.png +「加載中」 -->
   <div id="globalLoading" class="global-loading">
-    <img src="../icon/Universal/loading.jpg" alt="Loading" />
+    <img src="../icon/Universal/loading.png" alt="Loading" />
     <div class="loading-text">加載中</div>
   </div>
 
@@ -518,7 +518,7 @@
       scanStatus.textContent = '目標遺失，請再對準「' + (currentTargetName || '目標') + '」。';
     }
 
-    // ✅ 掃描成功 → 按鈕加 passed + locked，並在 hotspot 上蓋 pass.jpg
+    // ✅ 掃描成功 → 按鈕加 passed + locked，並在 hotspot 上蓋 pass.png
     function markSpotDone(idx){
       if(idx == null) return;
       const btn = document.querySelector('.hotspot a[data-idx="' + idx + '"]');
@@ -531,7 +531,7 @@
         if(!stamp){
           stamp = document.createElement('img');
           stamp.className = 'pass-stamp';
-          stamp.src = '../icon/Universal/pass.jpg';
+          stamp.src = '../icon/Universal/pass.png';
           stamp.alt = '已通關';
           host.appendChild(stamp);
         }
