@@ -121,40 +121,44 @@
       justify-content:center;
       pointer-events:auto;
     }
+    /* ✅ 改成正方形、50% 透明度、文字上下兩列 */
     .hotspot a{
-      display:inline-flex;
+      display:flex;
+      flex-direction:column;
       align-items:center;
-      gap:8px;
-      padding:10px 12px;
-      border-radius:999px;
-      background:rgba(255,255,255,.85);
+      justify-content:center;
+      width:min(32vw,120px);
+      aspect-ratio:1/1;
+      border-radius:16px;
+      background:rgba(255,255,255,0.5);
       border:1px solid var(--line);
       box-shadow:0 4px 12px rgba(0,0,0,.12);
       backdrop-filter:blur(6px);
       font-weight:800;
       color:var(--text);
       text-decoration:none;
+      text-align:center;
+      padding:8px;
       transition:.15s;
-    }
-    .hotspot a .num{
-      display:inline-grid;
-      place-items:center;
-      width:24px;
-      height:24px;
-      border-radius:999px;
-      background:linear-gradient(180deg,var(--brand),#60a5fa);
-      color:#fff;
-      font-size:12px;
     }
     .hotspot a:hover{
       transform:translateY(-1px);
+    }
+    .hotspot a .label-top{
+      font-size:13px;
+      letter-spacing:.15em;
+    }
+    .hotspot a .label-bottom{
+      font-size:12px;
+      margin-top:4px;
+      white-space:nowrap;
     }
     /* 掃描完成的按鈕樣式 */
     .hotspot a.passed{
       border-color:#22c55e;
       box-shadow:0 0 0 2px rgba(34,197,94,.35);
     }
-    /* 掃描完成後鎖定按鈕（不可再點） */
+    /* 掃描完成後鎖定按鈕 */
     .hotspot a.locked{
       opacity:.6;
       cursor:not-allowed;
@@ -301,35 +305,6 @@
       opacity:0 !important;
       visibility:hidden !important;
     }
-
-    /* === 全站載入 loading 畫面（白畫布 + loading.png +「加載中」） === */
-    .global-loading{
-      position:fixed;
-      inset:0;
-      z-index:5000;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      background:#ffffff;
-      transition:opacity .35s ease;
-    }
-    .global-loading img{
-      max-width:70vw;
-      max-height:50vh;
-      object-fit:contain;
-      display:block;
-    }
-    .global-loading .loading-text{
-      margin-top:16px;
-      font-size:16px;
-      letter-spacing:.4em;
-      color:#111827;
-    }
-    .global-loading.hide{
-      opacity:0;
-      pointer-events:none;
-    }
   </style>
 
   <!-- A-Frame + MindAR -->
@@ -337,12 +312,6 @@
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.3/dist/mindar-image-aframe.prod.js"></script>
 </head>
 <body>
-  <!-- ✅ 全頁載入白畫布 + loading.png +「加載中」 -->
-  <div id="globalLoading" class="global-loading">
-    <img src="../icon/Universal/loading.png" alt="Loading" />
-    <div class="loading-text">加載中</div>
-  </div>
-
   <header><h1>任務一：濟時篇</h1></header>
 
   <section class="progress-wrap" aria-label="任務進度">
@@ -368,30 +337,48 @@
         <div class="map-wrap" id="sbmap">
           <img class="map-img" src="../icon/Universal/SBmap.jpg?v=4" alt="濟時樓SB地圖" />
           <div class="hotgrid">
-            <!-- 左上=12織 → idx=11 -->
+            <!-- 左上=12織 → idx=11 / 織品之心 -->
             <div class="hotspot" style="grid-area:1/1;justify-content:flex-start;padding-left:8px;">
-              <a href="#" data-target="12織" data-frame="12織.png" data-idx="11"><span class="num">1</span><span>12織</span></a>
+              <a href="#" data-target="12織" data-frame="12織.png" data-idx="11">
+                <span class="label-top">點燃</span>
+                <span class="label-bottom">織品之心</span>
+              </a>
             </div>
-            <!-- 左中=06理 → idx=5 -->
+            <!-- 左中=06理 → idx=5 / 理工之心 -->
             <div class="hotspot" style="grid-area:2/1;justify-content:flex-start;padding-left:8px;">
-              <a href="#" data-target="06理" data-frame="06理.png" data-idx="5"><span class="num">3</span><span>06理</span></a>
+              <a href="#" data-target="06理" data-frame="06理.png" data-idx="5">
+                <span class="label-top">點燃</span>
+                <span class="label-bottom">理工之心</span>
+              </a>
             </div>
-            <!-- 左下=10社 → idx=9 -->
+            <!-- 左下=10社 → idx=9 / 社會之心 -->
             <div class="hotspot" style="grid-area:3/1;justify-content:flex-start;padding-left:8px;">
-              <a href="#" data-target="10社" data-frame="10社.png" data-idx="9"><span class="num">5</span><span>10社</span></a>
+              <a href="#" data-target="10社" data-frame="10社.png" data-idx="9">
+                <span class="label-top">點燃</span>
+                <span class="label-bottom">社會之心</span>
+              </a>
             </div>
 
-            <!-- 右上=11管 → idx=10 -->
+            <!-- 右上=11管 → idx=10 / 管理之心 -->
             <div class="hotspot" style="grid-area:1/2;justify-content:flex-end;padding-right:8px;">
-              <a href="#" data-target="11管" data-frame="11管.png" data-idx="10"><span class="num">2</span><span>11管</span></a>
+              <a href="#" data-target="11管" data-frame="11管.png" data-idx="10">
+                <span class="label-top">點燃</span>
+                <span class="label-bottom">管理之心</span>
+              </a>
             </div>
-            <!-- 右中=03傳 → idx=2 -->
+            <!-- 右中=03傳 → idx=2 / 傳播之心 -->
             <div class="hotspot" style="grid-area:2/2;justify-content:flex-end;padding-right:8px;">
-              <a href="#" data-target="03傳" data-frame="03傳.png" data-idx="2"><span class="num">4</span><span>03傳</span></a>
+              <a href="#" data-target="03傳" data-frame="03傳.png" data-idx="2">
+                <span class="label-top">點燃</span>
+                <span class="label-bottom">傳播之心</span>
+              </a>
             </div>
-            <!-- 右下=09法 → idx=8 -->
+            <!-- 右下=09法 → idx=8 / 法律之心 -->
             <div class="hotspot" style="grid-area:3/2;justify-content:flex-end;padding-right:8px;">
-              <a href="#" data-target="09法" data-frame="09法.png" data-idx="8"><span class="num">6</span><span>09法</span></a>
+              <a href="#" data-target="09法" data-frame="09法.png" data-idx="8">
+                <span class="label-top">點燃</span>
+                <span class="label-bottom">法律之心</span>
+              </a>
             </div>
           </div>
         </div>
@@ -457,7 +444,7 @@
 
   <script>
     // ===== 進度條 =====
-    const TOTAL_STEPS = 6, CURRENT_STEP = 1; // 0:首頁,1:任務一,...
+    const TOTAL_STEPS = 6, CURRENT_STEP = 1;
     const steps = document.querySelectorAll('.step');
     const bar = document.getElementById('bar');
     steps.forEach((el,i)=>{
@@ -474,14 +461,6 @@
     }
     setVh();
     window.addEventListener('resize', setVh);
-
-    // ===== 全頁 loading 收合 =====
-    const globalLoading = document.getElementById('globalLoading');
-    window.addEventListener('load', ()=>{
-      if(globalLoading){
-        setTimeout(()=>globalLoading.classList.add('hide'), 300);
-      }
-    });
 
     // ===== AR 掃描相關 =====
     const scannerOverlay = document.getElementById('scannerOverlay');
@@ -518,7 +497,7 @@
       scanStatus.textContent = '目標遺失，請再對準「' + (currentTargetName || '目標') + '」。';
     }
 
-    // ✅ 掃描成功 → 按鈕加 passed + locked，並在 hotspot 上蓋 pass.png
+    // 掃描成功 → 按鈕加 passed + locked，並在 hotspot 上蓋 pass.png
     function markSpotDone(idx){
       if(idx == null) return;
       const btn = document.querySelector('.hotspot a[data-idx="' + idx + '"]');
