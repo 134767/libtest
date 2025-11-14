@@ -154,8 +154,23 @@
       border-color:#22c55e;
       box-shadow:0 0 0 2px rgba(34,197,94,.35);
     }
+    /* 掃描完成後鎖定按鈕（不可再點） */
+    .hotspot a.locked{
+      opacity:.6;
+      cursor:not-allowed;
+    }
+    /* pass.jpg 蓋章在 hotspot 上方 */
+    .hotspot .pass-stamp{
+      position:absolute;
+      inset:50% auto auto 50%;
+      transform:translate(-50%,-50%);
+      max-width:80%;
+      max-height:80%;
+      pointer-events:none;
+      display:block;
+    }
 
-    /* === 以下為「方式 B」用的掃描器樣式 === */
+    /* === 以下為「方式 B」用的掃描器樣式（同頁） === */
 
     .scanner-overlay{
       position:fixed;
@@ -286,6 +301,35 @@
       opacity:0 !important;
       visibility:hidden !important;
     }
+
+    /* === 全站載入 loading 畫面（白畫布 + loading.jpg +「加載中」） === */
+    .global-loading{
+      position:fixed;
+      inset:0;
+      z-index:5000;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      background:#ffffff;
+      transition:opacity .35s ease;
+    }
+    .global-loading img{
+      max-width:70vw;
+      max-height:50vh;
+      object-fit:contain;
+      display:block;
+    }
+    .global-loading .loading-text{
+      margin-top:16px;
+      font-size:16px;
+      letter-spacing:.4em;
+      color:#111827;
+    }
+    .global-loading.hide{
+      opacity:0;
+      pointer-events:none;
+    }
   </style>
 
   <!-- A-Frame + MindAR -->
@@ -293,6 +337,12 @@
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.3/dist/mindar-image-aframe.prod.js"></script>
 </head>
 <body>
+  <!-- ✅ 全頁載入白畫布 + loading.jpg +「加載中」 -->
+  <div id="globalLoading" class="global-loading">
+    <img src="../icon/Universal/loading.jpg" alt="Loading" />
+    <div class="loading-text">加載中</div>
+  </div>
+
   <header><h1>任務一：濟時篇</h1></header>
 
   <section class="progress-wrap" aria-label="任務進度">
@@ -407,7 +457,7 @@
 
   <script>
     // ===== 進度條 =====
-    const TOTAL_STEPS = 6, CURRENT_STEP = 1;
+    const TOTAL_STEPS = 6, CURRENT_STEP = 1; // 0:首頁,1:任務一,...
     const steps = document.querySelectorAll('.step');
     const bar = document.getElementById('bar');
     steps.forEach((el,i)=>{
@@ -424,6 +474,14 @@
     }
     setVh();
     window.addEventListener('resize', setVh);
+
+    // ===== 全頁 loading 收合 =====
+    const globalLoading = document.getElementById('globalLoading');
+    window.addEventListener('load', ()=>{
+      if(globalLoading){
+        setTimeout(()=>globalLoading.classList.add('hide'), 300);
+      }
+    });
 
     // ===== AR 掃描相關 =====
     const scannerOverlay = document.getElementById('scannerOverlay');
@@ -460,10 +518,24 @@
       scanStatus.textContent = '目標遺失，請再對準「' + (currentTargetName || '目標') + '」。';
     }
 
+    // ✅ 掃描成功 → 按鈕加 passed + locked，並在 hotspot 上蓋 pass.jpg
     function markSpotDone(idx){
       if(idx == null) return;
       const btn = document.querySelector('.hotspot a[data-idx="' + idx + '"]');
-      if(btn) btn.classList.add('passed');
+      if(!btn) return;
+      btn.classList.add('passed','locked');
+
+      const host = btn.closest('.hotspot');
+      if(host){
+        let stamp = host.querySelector('.pass-stamp');
+        if(!stamp){
+          stamp = document.createElement('img');
+          stamp.className = 'pass-stamp';
+          stamp.src = '../icon/Universal/pass.jpg';
+          stamp.alt = '已通關';
+          host.appendChild(stamp);
+        }
+      }
     }
 
     function startScanner(targetName, idx, framePath){
@@ -517,10 +589,16 @@
 
     scanClose.addEventListener('click', ()=>{ stopScanner(); });
 
-    // 熱點按鈕 → 同頁啟動 AR 掃描
+    // 熱點按鈕 → 同頁啟動 AR 掃描（若已通過則鎖定）
     hotButtons.forEach(a=>{
       a.addEventListener('click', (e)=>{
         e.preventDefault();
+
+        if(a.classList.contains('locked')){
+          scanStatus.textContent = '此學院之心已完成認證，無需重複掃描。';
+          return;
+        }
+
         const target = a.dataset.target || '';
         const frame  = a.dataset.frame  || '';
         const idx    = Number(a.dataset.idx);
