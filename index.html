@@ -52,6 +52,14 @@
     .label{ font-weight:700; font-size:13px; }
     .input{ padding:10px 12px; border-radius:12px; border:1px solid var(--line); background:#fff; font-size:14px; }
     .help{ margin-top:8px; padding:8px 12px; border-radius:12px; background:#e0f2fe; color:#075985; border:1px solid #bae6fd; font-size:13px; }
+    .form-message{
+      margin-top:10px;
+      font-size:13px;
+      font-weight:700;
+      min-height:18px;
+    }
+    .form-message.error{ color:#b91c1c; }
+    .form-message.success{ color:#15803d; }
     .actions{ display:flex; flex-wrap:wrap; gap:10px; margin-top:12px; }
     .btn{ appearance:none; border:0; border-radius:12px; padding:12px 14px; font-weight:800; font-size:14px; text-decoration:none; cursor:pointer; }
     .btn.primary{ color:#fff; background:linear-gradient(180deg,#3b82f6,#2563eb); box-shadow:var(--shadow); }
@@ -75,15 +83,14 @@
   </section>
   <main class="container" id="main">
     <section class="intro">
-      <h2>世界的呼喚與沉睡的知識</h2>
-      <h2>年輕的知識學徒們… 是時候甦醒了…</h2>
-      <p>傳說，『學院之心』是所有學院知識之源，如今它正遭受前所未有的危機！</p>
-      <p>現今『學院之心』在現世的維度中搖搖欲墜、逐漸消融於『虛幻與現實之隙』中！</p>
-      <p>這個裂隙正在扭曲你們的認知，將整個校園化為一個無邊際的迷宮。</p>
-      <p>你們的潛能之火與在圖書館僅存的『學院之心』產生了共鳴…</p>
-      <p>必須透過艱難的挑戰與學習，去尋找散落在圖書館各個角落的『學院之心』重新點燃，才能突破重重困難！</p>
-      <p>並徹底解開『虛幻與現實之隙』的終極謎團，重返穩定的現實完成大學學業！</p>
-      <p class="note">圖書館無限城冒險，現在開始。<br>📣 本次活動的最終得分要達到 <b>100分</b> 才能取得圖書館給予的認證唷！</p>
+      <h2>2026大學新鮮人-圖書館無限城冒險→ GO! </h2>
+      <h2>尋找院吉祥物！濟時樓圖書館VR互動體驗大地遊戲</h2>
+      <p>想用不一樣的方式認識濟時樓圖書館嗎？</p>
+      <p>「濟時樓圖書館VR互動體驗大地遊戲」正式啟動！</p>
+      <p>我們將各學院的可愛吉祥物巧妙地融入圖書館空間，打造獨特的尋寶體驗。</p>
+      <p>歡迎您拿起手機，展開一場結合虛擬與現實的探索冒險，</p>
+      <p>將他們一一找出來吧！</p>
+      <p class="note">🎁 全部通關完成後，請記得前往濟時樓二樓櫃台領取你的專屬小禮物喔！ <br>準備好你的探索精神，一起來尋寶吧！GO！GO！GO！</p>
     </section>
     <section class="panel">
       <h3>基本資料認證</h3>
@@ -102,6 +109,7 @@
         </div>
       </div>
       <div class="help">（目前為測試模式，已停用格式驗證）</div>
+      <p id="formMessage" class="form-message" role="alert" aria-live="polite"></p>
       <div class="actions">
         <a class="btn primary" id="startBtn" href="./pages/mission1.html">開始冒險</a>
       </div>
