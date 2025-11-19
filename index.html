@@ -171,8 +171,8 @@
   </div>
 
   <script>
-    // ✅ 你的 GAS Web App URL（只寫入、不回傳）
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbysBKsv9n7471wj3sAWFpa1MI85JesJJJwhhopzWwIt4GUAa-ITQKWITqEhJcdMMi3nXA/exec";
+    // ✅ 你的 GAS Web App URL（只寫入、不回傳） — 使用最新部署
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbyvqF1lKsFyRem_kGrPZ6uvmECjYsQHchxZK8VSrUXYbH27WaWBuN4Hr62QLPREHQ4l7w/exec";
 
     // ===== 進度條邏輯 =====
     const TOTAL_STEPS = 6; // 1..6
@@ -242,11 +242,13 @@
       }
     }
 
-    // ===== 統一封裝：寫入一筆事件到 Sheet（簡單請求、no-cors） =====
+    // ===== 統一封裝：寫入一筆事件到 Sheet（簡單請求、no-cors，送 JSON） =====
     async function logEventToSheet(payload){
       try{
-        // 使用 application/x-www-form-urlencoded + no-cors → 符合 simple request，降低 CORS 風險
-        const body = new URLSearchParams({
+        // 這裡改成「JSON 字串」+ no-cors，不加任何 Content-Type
+        // → 瀏覽器用 text/plain 發送
+        // → GAS 端可以用 JSON.parse(e.postData.contents) 正常解析
+        const body = JSON.stringify({
           ...payload,
           ts: Date.now().toString()
         });
@@ -254,9 +256,6 @@
         await fetch(GAS_URL, {
           method: 'POST',
           mode: 'no-cors',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
-          },
           body
         });
 
