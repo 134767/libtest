@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>2026大學新鮮人｜圖書館無限城冒險</title>
+  <meta name="theme-color" content="#ffffff" />
+  <style>
+    :root{
+      --bg:#f7fafc;
+      --text:#0f172a;
+      --muted:#64748b;
+      --panel:#ffffff;
+      --line:#e5e7eb;
+      --brand:#2563eb;
+      --brand-2:#22c55e;
+      --accent:#0ea5e9;
+      --shadow:0 10px 25px rgba(15,23,42,.08);
+      --radius:16px;
+      --ring: rgba(37, 99, 235, .25);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Noto Sans, 'Helvetica Neue', Arial, 'Apple Color Emoji', 'Segoe UI Emoji';
+      color:var(--text);
+      background: radial-gradient(1200px 800px at 80% -10%, rgba(37,99,235,.08), transparent 55%),
+                  radial-gradient(900px 700px at 0% 30%, rgba(14,165,233,.08), transparent 55%),
+                  var(--bg);
+      display:grid; grid-template-rows:auto auto 1fr; min-height:100vh;
+    }
+    .site-title{ padding:22px 16px 4px; }
+    .site-title h1{ margin:0; font-size: clamp(20px, 4.2vw, 30px); font-weight:800; letter-spacing:.2px; }
+    .progress-wrap { padding: 8px 16px 14px; }
+    .steps { display:grid; grid-template-columns: repeat(6,1fr); gap:8px; margin-bottom:10px; }
+    .step { display:grid; place-items:center; gap:6px; color:var(--muted); font-size:11px; user-select:none; }
+    .step .dot{ width:28px; height:28px; border-radius:999px; display:grid; place-items:center; font-weight:800; background:#fff; border:1px solid var(--line); box-shadow:0 0 0 0 var(--ring); transition:.18s; }
+    .step.active .dot,.step.done .dot{ background: linear-gradient(180deg, var(--brand), #60a5fa); color:#fff; border-color: transparent; box-shadow: 0 0 0 6px var(--ring); }
+    .bar { width:100%; height:8px; background:#e5e7eb; border-radius:999px; overflow:hidden; position:relative; }
+    .bar > i { display:block; height:100%; width: var(--p,0%); background: linear-gradient(90deg, var(--brand), var(--brand-2)); transition: width .35s ease; }
+    .container{ padding:12px 16px 60px; display:grid; gap:18px; }
+    .intro{ background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); padding:18px; }
+    .intro h2{ margin:0 0 8px; font-size: clamp(18px, 3.6vw, 22px); }
+    .intro p{ margin:8px 0; color:var(--text); line-height:1.7; }
+    .intro .note{ margin-top:10px; padding:8px 12px; border-radius:12px; background:#eef6ff; color:#1e40af; border:1px solid #bfdbfe; font-weight:700; }
+    .panel{ background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); padding:18px; }
+    .panel h3{ margin:0 0 12px; font-size:18px; }
+    .grid{ display:grid; gap:12px; grid-template-columns: 1fr; }
+    @media (min-width:720px){ .grid{ grid-template-columns: repeat(3, 1fr); } }
+    .field{ display:grid; gap:6px; }
+    .label{ font-weight:700; font-size:13px; }
+    .input{ padding:10px 12px; border-radius:12px; border:1px solid var(--line); background:#fff; font-size:14px; }
+    .help{ margin-top:8px; padding:8px 12px; border-radius:12px; background:#e0f2fe; color:#075985; border:1px solid #bae6fd; font-size:13px; }
+    .form-message{
+      margin-top:10px;
+      font-size:13px;
+      font-weight:700;
+      min-height:18px;
+    }
+    .form-message.error{ color:#b91c1c; }
+    .form-message.success{ color:#15803d; }
+    .actions{ display:flex; flex-wrap:wrap; gap:10px; margin-top:12px; }
+    .btn{ appearance:none; border:0; border-radius:12px; padding:12px 14px; font-weight:800; font-size:14px; text-decoration:none; cursor:pointer; }
+    .btn.primary{ color:#fff; background:linear-gradient(180deg,#3b82f6,#2563eb); box-shadow:var(--shadow); }
+    .btn.outline{ background:#fff; color:#0f172a; border:1px solid var(--line); }
+
+    /* 🔄 全螢幕載入緩衝頁（開始冒險 → 寫入 → 進任務一） */
+    .loading-overlay{
+      position:fixed;
+      inset:0;
+      background:rgba(248,250,252,.95);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:999;
+      flex-direction:column;
+      text-align:center;
+      padding:24px;
+    }
+    .loading-overlay.show{
+      display:flex;
+    }
+    .loading-overlay h2{
+      margin:8px 0 4px;
+      font-size:18px;
+    }
+    .loading-overlay p{
+      margin:0;
+      font-size:14px;
+      color:var(--muted);
+    }
+    .loader-dot{
+      width:10px;
+      height:10px;
+      border-radius:999px;
+      background:var(--brand);
+      margin:0 3px;
+      animation:bounce 0.9s infinite alternate;
+      display:inline-block;
+    }
+    .loader-dot:nth-child(2){ animation-delay:.15s; }
+    .loader-dot:nth-child(3){ animation-delay:.3s; }
+    @keyframes bounce{
+      from{ transform:translateY(0); opacity:.4; }
+      to{ transform:translateY(-6px); opacity:1; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-title">
+    <h1>2026大學新鮮人-圖書館無限城冒險</h1>
+  </header>
+  <section class="progress-wrap" aria-label="任務進度">
+    <div class="steps" id="steps">
+      <div class="step active" data-step="1" aria-current="step"><div class="dot">1</div>首頁</div>
+      <div class="step" data-step="2"><div class="dot">2</div>任務一</div>
+      <div class="step" data-step="3"><div class="dot">3</div>任務二</div>
+      <div class="step" data-step="4"><div class="dot">4</div>任務三</div>
+      <div class="step" data-step="5"><div class="dot">5</div>工商</div>
+      <div class="step" data-step="6"><div class="dot">6</div>完成</div>
+    </div>
+    <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="完成百分比"><i id="bar"></i></div>
+  </section>
+  <main class="container" id="main">
+    <section class="intro">
+      <h2>2026大學新鮮人-圖書館無限城冒險→ GO! </h2>
+      <h2>尋找院吉祥物！濟時樓圖書館VR互動體驗大地遊戲</h2>
+      <p>想用不一樣的方式認識濟時樓圖書館嗎？</p>
+      <p>「濟時樓圖書館VR互動體驗大地遊戲」正式啟動！</p>
+      <p>我們將各學院的可愛吉祥物巧妙地融入圖書館空間，打造獨特的尋寶體驗。</p>
+      <p>歡迎您拿起手機，展開一場結合虛擬與現實的探索冒險，</p>
+      <p>將他們一一找出來吧！</p>
+      <p class="note">🎁 全部通關完成後，請記得前往濟時樓二樓櫃台領取你的專屬小禮物喔！ <br>準備好你的探索精神，一起來尋寶吧！GO！GO！GO！</p>
+    </section>
+    <section class="panel">
+      <h3>基本資料認證</h3>
+      <div class="grid">
+        <div class="field">
+          <label class="label" for="sid">學號 *</label>
+          <input class="input" id="sid" placeholder="請輸入學號" />
+        </div>
+        <div class="field">
+          <label class="label" for="name">姓名 *</label>
+          <input class="input" id="name" placeholder="請輸入姓名" />
+        </div>
+        <div class="field">
+          <label class="label" for="mail">Email *</label>
+          <input class="input" id="mail" type="email" placeholder="請輸入常用 Email" />
+        </div>
+      </div>
+      <div class="help">請確認學號、姓名與 Email 填寫正確，之後將用於認證闖關紀錄。</div>
+      <p id="formMessage" class="form-message" role="alert" aria-live="polite"></p>
+      <div class="actions">
+        <button class="btn primary" id="startBtn" type="button">開始冒險</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- 🔄 載入緩衝頁（index → mission1 期間顯示） -->
+  <div class="loading-overlay" id="loadingOverlay" aria-hidden="true">
+    <div>
+      <div>
+        <span class="loader-dot"></span>
+        <span class="loader-dot"></span>
+        <span class="loader-dot"></span>
+      </div>
+      <h2>資料同步中…</h2>
+      <p>正在紀錄你的冒險者身分，請稍候片刻。</p>
+    </div>
+  </div>
+
+  <script>
+    // ✅ 你的 GAS Web App URL（只寫入、不回傳）
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbysBKsv9n7471wj3sAWFpa1MI85JesJJJwhhopzWwIt4GUAa-ITQKWITqEhJcdMMi3nXA/exec";
+
+    // ===== 進度條邏輯 =====
+    const TOTAL_STEPS = 6; // 1..6
+    const CURRENT_STEP = 0; // 首頁索引
+
+    const steps = Array.from(document.querySelectorAll('.step'));
+    const bar = document.getElementById('bar');
+
+    function renderProgress(){
+      steps.forEach((el,i)=>{
+        el.classList.remove('active','done');
+        if(i === CURRENT_STEP) el.classList.add('active');
+      });
+      const percent = Math.round((CURRENT_STEP / (TOTAL_STEPS - 1)) * 100);
+      bar.style.setProperty('--p', percent + '%');
+      bar.parentElement.setAttribute('aria-valuenow', String(percent));
+    }
+
+    const qs = new URLSearchParams(location.search).get('step');
+    if (qs) {
+      const t = Math.max(1, Math.min(Number(qs), TOTAL_STEPS));
+      steps.forEach((el,i)=>{
+        el.classList.remove('active','done');
+        if(i === (t-1)) el.classList.add('active');
+      });
+      const percent = Math.round(((t-1) / (TOTAL_STEPS - 1)) * 100);
+      bar.style.setProperty('--p', percent + '%');
+      bar.parentElement.setAttribute('aria-valuenow', String(percent));
+    } else {
+      renderProgress();
+    }
+
+    // ===== 首頁欄位自動記住（localStorage，玩家端自己保留資料） =====
+    const fields=['sid','name','mail'];
+    fields.forEach(id=>{
+      const el=document.getElementById(id);
+      const key='home_'+id;
+      if(!el) return;
+      const saved=localStorage.getItem(key);
+      if(saved) el.value=saved;
+      el.addEventListener('input',()=>localStorage.setItem(key,el.value||'')); // 輸入即儲存
+    });
+
+    // ===== 表單訊息顯示 =====
+    const formMessage = document.getElementById('formMessage');
+    const sidInput    = document.getElementById('sid');
+    const nameInput   = document.getElementById('name');
+    const mailInput   = document.getElementById('mail');
+    const startBtn    = document.getElementById('startBtn');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+
+    function showFormMessage(text, type){
+      if(!formMessage) return;
+      formMessage.textContent = text || "";
+      formMessage.classList.remove('error','success');
+      if(type) formMessage.classList.add(type);
+    }
+
+    function showLoadingOverlay(show){
+      if(!loadingOverlay) return;
+      if(show){
+        loadingOverlay.classList.add('show');
+        loadingOverlay.setAttribute('aria-hidden', 'false');
+      }else{
+        loadingOverlay.classList.remove('show');
+        loadingOverlay.setAttribute('aria-hidden', 'true');
+      }
+    }
+
+    // ===== 統一封裝：寫入一筆事件到 Sheet（簡單請求、no-cors） =====
+    async function logEventToSheet(payload){
+      try{
+        // 使用 application/x-www-form-urlencoded + no-cors → 符合 simple request，降低 CORS 風險
+        const body = new URLSearchParams({
+          ...payload,
+          ts: Date.now().toString()
+        });
+
+        await fetch(GAS_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+          },
+          body
+        });
+
+        // no-cors 模式下無法檢查回應，但我們只需要「盡力送出」即可
+      }catch(err){
+        console.error('logEventToSheet error:', err);
+      }
+    }
+
+    // ===== 點「開始冒險」 → 寫入一筆 register 紀錄 → 顯示緩衝頁 → 進任務一 =====
+    if(startBtn){
+      startBtn.addEventListener('click', async (evt)=>{
+        evt.preventDefault();
+
+        const sid   = (sidInput.value  || '').trim();
+        const name  = (nameInput.value || '').trim();
+        const email = (mailInput.value || '').trim();
+
+        if(!sid || !name || !email){
+          showFormMessage('請完整填寫學號、姓名與 Email。', 'error');
+          return;
+        }
+
+        // 先寫到 localStorage：玩家自己的裝置保留進度與身分
+        localStorage.setItem('player_sid',   sid);
+        localStorage.setItem('player_name',  name);
+        localStorage.setItem('player_email', email);
+
+        showFormMessage('資料送出中，請稍候…', 'success');
+        startBtn.disabled = true;
+
+        // 顯示全螢幕緩衝畫面，當成 index→任務一的「載入緩衝頁」
+        showLoadingOverlay(true);
+
+        // 將「首頁開始冒險」事件記錄到 Sheet（只寫入一次，不回讀）
+        logEventToSheet({
+          action: 'register',
+          page: 'index',
+          event: 'start',
+          sid,
+          name,
+          email
+        });
+
+        // 無論寫入是否成功，都在短暫緩衝後進入任務一（遊戲邏輯在前端，不被後端阻擋）
+        setTimeout(()=>{
+          location.href = './pages/mission1.html';
+        }, 900);
+      });
+    }
+  </script>
+</body>
+</html>

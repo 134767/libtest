@@ -1,0 +1,843 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>圖書館無限城冒險｜VR互動體驗大地遊戲</title>
+  <meta name="theme-color" content="#ffffff" />
+  <style>
+    :root{
+      --bg:#f8fafc;
+      --text:#0f172a;
+      --muted:#64748b;
+      --panel:#ffffff;
+      --line:#e5e7eb;
+      --brand:#2563eb;
+      --brand-2:#22c55e;
+      --radius:16px;
+      --shadow:0 10px 25px rgba(15,23,42,.08);
+      --ring:rgba(37,99,235,.25);
+      --vh:1vh;
+    }
+    *{box-sizing:border-box;}
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica Neue,Arial;
+      color:var(--text);
+      background:var(--bg);
+      display:grid;
+      grid-template-rows:auto auto 1fr auto;
+      min-height:100vh;
+    }
+    header{padding:20px 16px 4px;}
+    header h1{
+      margin:0;
+      font-size:clamp(20px,4.2vw,28px);
+      font-weight:800;
+    }
+    /* 顯示學號／姓名 */
+    .player-info{
+      margin-top:6px;
+      font-size:13px;
+      color:var(--muted);
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+    }
+    .player-info span{
+      white-space:nowrap;
+    }
+
+    .progress-wrap{padding:8px 16px 14px;}
+    .steps{
+      display:grid;
+      grid-template-columns:repeat(6,1fr);
+      gap:8px;
+      margin-bottom:10px;
+    }
+    .step{
+      display:grid;
+      place-items:center;
+      gap:6px;
+      color:var(--muted);
+      font-size:11px;
+    }
+    .step .dot{
+      width:28px;
+      height:28px;
+      border-radius:999px;
+      display:grid;
+      place-items:center;
+      font-weight:800;
+      background:#fff;
+      border:1px solid var(--line);
+      box-shadow:0 0 0 0 var(--ring);
+      transition:.18s;
+    }
+    .step.active .dot{
+      background:linear-gradient(180deg,var(--brand),#60a5fa);
+      color:#fff;
+      border-color:transparent;
+      box-shadow:0 0 0 6px var(--ring);
+    }
+    .bar{
+      width:100%;
+      height:8px;
+      background:#e5e7eb;
+      border-radius:999px;
+      overflow:hidden;
+    }
+    .bar>i{
+      display:block;
+      height:100%;
+      width:var(--p,0%);
+      background:linear-gradient(90deg,var(--brand),var(--brand-2));
+      transition:width .35s ease;
+    }
+    main{
+      padding:16px;
+      display:grid;
+      gap:20px;
+    }
+    section{
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:20px;
+    }
+    .map-area{margin-top:20px;}
+    .map-wrap{
+      position:relative;
+      max-width:100%;
+      margin-top:16px;
+    }
+    .map-wrap img.map-img{
+      width:100%;
+      height:auto;
+      border-radius:12px;
+      box-shadow:0 6px 16px rgba(0,0,0,.1);
+    }
+    .hotgrid{
+      position:absolute;
+      inset:0;
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      grid-template-rows:repeat(5,1fr);
+      gap:4px;
+      pointer-events:none;
+    }
+    .hotspot{
+      position:relative;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      pointer-events:auto;
+    }
+    .hotspot a{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      width:20%;
+      height:50px;
+      border-radius:12px;
+      background:rgba(255,255,255,0.01);
+      box-shadow:0 4px 12px rgba(0,0,0,.12);
+      border:1px solid var(--line);
+      backdrop-filter:blur(6px);
+      font-weight:800;
+      color:var(--text);
+      text-decoration:none;
+      text-align:center;
+      padding:6px;
+      transition:.15s;
+    }
+    .hotspot a:hover{
+      transform:translateY(-1px);
+    }
+    .hotspot a .label-top{
+      font-size:10px;
+      letter-spacing:.15em;
+    }
+    .hotspot a .label-bottom{
+      font-size:50px;
+      margin-top:6px;
+      white-space:nowrap;
+    }
+    .hotspot a.passed{
+      border-color:#22c55e;
+      box-shadow:0 0 0 2px rgba(34,197,94,.35);
+    }
+    .hotspot a.locked{
+      opacity:.6;
+      cursor:not-allowed;
+    }
+    .hotspot .pass-stamp{
+      position:absolute;
+      inset:50% auto auto 50%;
+      transform:translate(-50%,-50%);
+      max-width:80%;
+      max-height:80%;
+      pointer-events:none;
+      display:block;
+    }
+
+    /* === 掃描器 overlay === */
+
+    .scanner-overlay{
+      position:fixed;
+      inset:0;
+      z-index:4000;
+      display:none;
+      background:#000;
+    }
+    .scanner-overlay.active{
+      display:block;
+    }
+
+    .scan-topbar{
+      position:fixed;
+      left:0;
+      right:0;
+      top:0;
+      z-index:4200;
+      padding:10px 16px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      background:linear-gradient(180deg,#f5f5f5,#ffffffee);
+      box-sizing:border-box;
+      color:#111827;
+    }
+    .scan-title{
+      font-size:16px;
+      font-weight:700;
+    }
+    .scan-close{
+      border:none;
+      border-radius:999px;
+      padding:6px 12px;
+      background:#003366;
+      color:#fff;
+      font-size:13px;
+      cursor:pointer;
+    }
+
+    .scan-frame-wrap{
+      position:fixed;
+      inset:0;
+      z-index:4100;
+      display:grid;
+      place-items:center;
+      pointer-events:none;
+    }
+    .scan-frame{
+      width:min(70vw,420px);
+      aspect-ratio:1/1;
+      border-radius:24px;
+      border:4px solid #ffffff;
+      position:relative;
+      box-sizing:border-box;
+      overflow:hidden;
+    }
+    .corner{
+      position:absolute;
+      width:26px;
+      height:26px;
+      border:4px solid #ffffff;
+    }
+    .corner.tl{left:-2px;top:-2px;border-right:none;border-bottom:none;}
+    .corner.tr{right:-2px;top:-2px;border-left:none;border-bottom:none;}
+    .corner.bl{left:-2px;bottom:-2px;border-right:none;border-top:none;}
+    .corner.br{right:-2px;bottom:-2px;border-left:none;border-top:none;}
+
+    .scan-frame img{
+      position:absolute;
+      left:50%;
+      top:50%;
+      transform:translate(-50%,-50%);
+      max-width:80%;
+      max-height:80%;
+      object-fit:contain;
+      pointer-events:none;
+    }
+
+    .scan-status{
+      position:fixed;
+      left:50%;
+      bottom:14px;
+      transform:translateX(-50%);
+      z-index:4200;
+      padding:6px 12px;
+      border-radius:999px;
+      font-size:12px;
+      color:#fff;
+      background:rgba(0,0,0,.6);
+      max-width:90vw;
+      text-align:center;
+    }
+
+    #arLayer{
+      position:fixed;
+      inset:0;
+      z-index:4000;
+      background:#000;
+    }
+    a-scene{
+      position:fixed;
+      inset:0;
+      width:100vw;
+      height:100vh;
+      background:transparent !important;
+    }
+    video, canvas, .a-canvas{
+      position:fixed !important;
+      left:0 !important;
+      top:0 !important;
+      width:100vw !important;
+      height:100vh !important;
+      object-fit:cover !important;
+      background:transparent !important;
+    }
+
+    .a-enter-vr,.a-enter-ar,
+    .a-enter-vr-button,.a-enter-ar-button{
+      display:none !important;
+    }
+    .mindar-ui-overlay,
+    .mindar-ui-scanning,
+    .mindar-ui-processing,
+    .mindar-ui-loading,
+    .mindar-ui-error{
+      display:none !important;
+      opacity:0 !important;
+      visibility:hidden !important;
+    }
+
+    /* 底部導覽按鈕容器 */
+    .nav-buttons{
+      margin:0 16px 16px;
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+    }
+  </style>
+
+  <!-- A-Frame + MindAR -->
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.3/dist/mindar-image-aframe.prod.js"></script>
+</head>
+<body>
+  <header>
+    <h1>大地遊戲</h1>
+    <div class="player-info">
+      <span id="playerSid">學號：——</span>
+      <span id="playerName">姓名：——</span>
+    </div>
+  </header>
+
+  <section class="progress-wrap" aria-label="任務進度">
+    <div class="steps" id="steps">
+      <div class="step" data-step="1"><div class="dot">1</div>首頁</div>
+      <div class="step active" data-step="2"><div class="dot">2</div>大地遊戲</div>
+      <div class="step" data-step="3"><div class="dot">3</div>任務二</div>
+      <div class="step" data-step="4"><div class="dot">4</div>任務三</div>
+      <div class="step" data-step="5"><div class="dot">5</div>工商</div>
+      <div class="step" data-step="6"><div class="dot">6</div>完成</div>
+    </div>
+    <div class="bar"><i id="bar"></i></div>
+  </section>
+
+  <main>
+    <section>
+      <h2>「濟時樓圖書館VR互動體驗大地遊戲」</h2>
+      <p>我們將各學院的可愛吉祥物巧妙地融入圖書館空間</p>
+      <p>將他們一一找出來吧！</p>
+
+      <div class="map-area">
+        <div class="map-wrap" id="sbmap">
+          <img class="map-img" src="../icon/Universal/SBmap.jpg?v=5" alt="濟時樓SB地圖" />
+          <div class="hotgrid">
+            <!-- 左1=06理 (idx=5) -->
+            <div class="hotspot" style="grid-area:1/1;justify-content:flex-start;padding-left:8px;">
+              <a href="#" data-target="06理" data-frame="06理.png" data-idx="5">
+                <span class="label-top">尋找</span>
+                <span class="label-top">吉祥物</span>
+              </a>
+            </div>
+            <!-- 左2=09法 (idx=8) -->
+            <div class="hotspot" style="grid-area:2/1;justify-content:flex-start;padding-left:8px;">
+              <a href="#" data-target="09法" data-frame="09法.png" data-idx="8">
+                <span class="label-top">尋找</span>
+                <span class="label-top">吉祥物</span>
+              </a>
+            </div>
+            <!-- 左3=04教 (idx=3) -->
+            <div class="hotspot" style="grid-area:3/1;justify-content:flex-start;padding-left:8px;">
+              <a href="#" data-target="04教" data-frame="04教.png" data-idx="3">
+                <span class="label-top">尋找</span>
+                <span class="label-top">吉祥物</span>
+              </a>
+            </div>
+            <!-- 左4=02藝 (idx=1) -->
+            <div class="hotspot" style="grid-area:4/1;justify-content:flex-start;padding-left:8px;">
+              <a href="#" data-target="02藝" data-frame="02藝.png" data-idx="1">
+                <span class="label-top">尋找</span>
+                <span class="label-top">吉祥物</span>
+              </a>
+            </div>
+            <!-- 左5=11管 (idx=10) -->
+            <div class="hotspot" style="grid-area:5/1;justify-content:flex-start;padding-left:8px;">
+              <a href="#" data-target="11管" data-frame="11管.png" data-idx="10">
+                <span class="label-top">尋找</span>
+                <span class="label-top">吉祥物</span>
+              </a>
+            </div>
+
+            <!-- 右1=08民 (idx=7) -->
+            <div class="hotspot" style="grid-area:1/2;justify-content:flex-end;padding-right:8px;">
+              <a href="#" data-target="08民" data-frame="08民.png" data-idx="7">
+                <span class="label-top">尋找</span>
+                <span class="label-top">吉祥物</span>
+              </a>
+            </div>
+            <!-- 右2=07外 (idx=6) -->
+            <div class="hotspot" style="grid-area:2/2;justify-content:flex-end;padding-right:8px;">
+              <a href="#" data-target="07外" data-frame="07外.png" data-idx="6">
+                <span class="label-top">尋找</span>
+                <span class="label-top">吉祥物</span>
+              </a>
+            </div>
+            <!-- 右3=03傳 (idx=2) -->
+            <div class="hotspot" style="grid-area:3/2;justify-content:flex-end;padding-right:8px;">
+              <a href="#" data-target="03傳" data-frame="03傳.png" data-idx="2">
+                <span class="label-top">尋找</span>
+                <span class="label-top">吉祥物</span>
+              </a>
+            </div>
+            <!-- 右4=10社 (idx=9) -->
+            <div class="hotspot" style="grid-area:4/2;justify-content:flex-end;padding-right:8px;">
+              <a href="#" data-target="10社" data-frame="10社.png" data-idx="9">
+                <span class="label-top">尋找</span>
+                <span class="label-top">吉祥物</span>
+              </a>
+            </div>
+            <!-- 右5=12織 (idx=11) -->
+            <div class="hotspot" style="grid-area:5/2;justify-content:flex-end;padding-right:8px;">
+              <a href="#" data-target="12織" data-frame="12織.png" data-idx="11">
+                <span class="label-top">尋找</span>
+                <span class="label-top">吉祥物</span>
+              </a>
+            </div>
+          </div>
+        </div>
+        <noscript>
+          <p>
+            <a href="../scanner.html?target=06%E7%90%86&frame=icon/png/06%E7%90%86.png&idx=5&step=2">06理</a> ·
+            <a href="../scanner.html?target=09%E6%B3%95&frame=icon/png/09%E6%B3%95.png&idx=8&step=2">09法</a> ·
+            <a href="../scanner.html?target=04%E6%95%99&frame=icon/png/04%E6%95%99.png&idx=3&step=2">04教</a> ·
+            <a href="../scanner.html?target=02%E8%97%9D&frame=icon/png/02%E8%97%9D.png&idx=1&step=2">02藝</a> ·
+            <a href="../scanner.html?target=11%E7%AE%A1&frame=icon/png/11%E7%AE%A1.png&idx=10&step=2">11管</a> ·
+            <a href="../scanner.html?target=08%E6%B0%91&frame=icon/png/08%E6%B0%91.png&idx=7&step=2">08民</a> ·
+            <a href="../scanner.html?target=07%E5%A4%96&frame=icon/png/07%E5%A4%96.png&idx=6&step=2">07外</a> ·
+            <a href="../scanner.html?target=03%E5%82%B3&frame=icon/png/03%E5%82%B3.png&idx=2&step=2">03傳</a> ·
+            <a href="../scanner.html?target=10%E7%A4%BE&frame=icon/png/10%E7%A4%BE.png&idx=9&step=2">10社</a> ·
+            <a href="../scanner.html?target=12%E7%B9%94&frame=icon/png/12%E7%B9%94.png&idx=11&step=2">12織</a>
+          </p>
+        </noscript>
+      </div>
+    </section>
+  </main>
+
+  <!-- ===== 方式B：同頁 AR 掃描 overlay ===== -->
+  <div id="scannerOverlay" class="scanner-overlay">
+    <div id="arLayer">
+      <a-scene
+        id="arScene"
+        mindar-image="imageTargetSrc: ../targets.mind?v=64; autoStart: false; maxTrack: 1; warmupTolerance:5; uiScanning:no; uiLoading:no; uiError:no"
+        embedded
+        vr-mode-ui="enabled: false"
+        device-orientation-permission-ui="enabled: false">
+
+        <a-camera position="0 0 0" look-controls="enabled:false"></a-camera>
+
+        <!-- 0~11 目標 anchor -->
+        <a-entity id="anchor-0"  mindar-image-target="targetIndex: 0"></a-entity>
+        <a-entity id="anchor-1"  mindar-image-target="targetIndex: 1"></a-entity>
+        <a-entity id="anchor-2"  mindar-image-target="targetIndex: 2"></a-entity>
+        <a-entity id="anchor-3"  mindar-image-target="targetIndex: 3"></a-entity>
+        <a-entity id="anchor-4"  mindar-image-target="targetIndex: 4"></a-entity>
+        <a-entity id="anchor-5"  mindar-image-target="targetIndex: 5"></a-entity>
+        <a-entity id="anchor-6"  mindar-image-target="targetIndex: 6"></a-entity>
+        <a-entity id="anchor-7"  mindar-image-target="targetIndex: 7"></a-entity>
+        <a-entity id="anchor-8"  mindar-image-target="targetIndex: 8"></a-entity>
+        <a-entity id="anchor-9"  mindar-image-target="targetIndex: 9"></a-entity>
+        <a-entity id="anchor-10" mindar-image-target="targetIndex:10"></a-entity>
+        <a-entity id="anchor-11" mindar-image-target="targetIndex:11"></a-entity>
+      </a-scene>
+    </div>
+
+    <div class="scan-topbar">
+      <div class="scan-title" id="scanTitle">請對準：吉祥物</div>
+      <button type="button" class="scan-close" id="scanClose">關閉掃描</button>
+    </div>
+
+    <div class="scan-frame-wrap">
+      <div class="scan-frame">
+        <div class="corner tl"></div>
+        <div class="corner tr"></div>
+        <div class="corner bl"></div>
+        <div class="corner br"></div>
+        <img id="scanFrameImage" alt="target preview" />
+      </div>
+    </div>
+
+    <div class="scan-status" id="scanStatus">正在準備 AR 掃描…</div>
+  </div>
+
+  <script>
+    // ===== 共用設定 =====
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbysBKsv9n7471wj3sAWFpa1MI85JesJJJwhhopzWwIt4GUAa-ITQKWITqEhJcdMMi3nXA/exec";
+
+    // 進度條（任務一 = 索引 1）
+    const TOTAL_STEPS = 6, CURRENT_STEP = 1;
+    const steps = document.querySelectorAll('.step');
+    const bar = document.getElementById('bar');
+    steps.forEach((el,i)=>{
+      el.classList.remove('active');
+      if(i === CURRENT_STEP) el.classList.add('active');
+    });
+    const percent = Math.round((CURRENT_STEP/(TOTAL_STEPS-1))*100);
+    bar.style.setProperty('--p', percent+'%');
+    bar.parentElement.setAttribute('aria-valuenow', String(percent));
+
+    // 100vh 修正（手機）
+    function setVh(){
+      document.documentElement.style.setProperty('--vh', window.innerHeight * 0.01 + 'px');
+    }
+    setVh();
+    window.addEventListener('resize', setVh);
+
+    // ===== 封裝：寫入一筆事件到 Sheet（簡單請求、no-cors） =====
+    async function logEventToSheet(payload){
+      try{
+        const body = new URLSearchParams({
+          ...payload,
+          ts: Date.now().toString()
+        });
+        await fetch(GAS_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+          },
+          body
+        });
+        // no-cors：不檢查回應，只盡力送出
+      }catch(err){
+        console.error('logEventToSheet error:', err);
+      }
+    }
+
+    // ===== AR 掃描相關 =====
+    const scannerOverlay = document.getElementById('scannerOverlay');
+    const scanTitle      = document.getElementById('scanTitle');
+    const scanClose      = document.getElementById('scanClose');
+    const scanStatus     = document.getElementById('scanStatus');
+    const scanFrameImage = document.getElementById('scanFrameImage');
+    const arScene        = document.getElementById('arScene');
+
+    const hotButtons = document.querySelectorAll('.hotspot a');
+
+    let currentTargetName = '';
+    let currentIdx = null;
+    let currentAnchor = null;
+    let isScanning = false;
+
+    const allAnchors = Array.from(arScene.querySelectorAll('[mindar-image-target]'));
+
+    // === 通關進度保存（localStorage，只在玩家手機） ===
+    let passedSet = new Set();
+    const requiredIdxs = Array.from(hotButtons).map(a => String(a.dataset.idx));
+    let nextBtn = null;
+    let mission1AllDone = false; // 用來記錄「是否所有點都完成」
+
+    function saveProgress(){
+      try{
+        const arr = Array.from(passedSet);
+        localStorage.setItem('mission1_passed', JSON.stringify(arr));
+      }catch(e){
+        console.error('saveProgress error', e);
+      }
+    }
+
+    function loadProgress(){
+      try{
+        let arr = null;
+        const raw = localStorage.getItem('mission1_passed');
+        if(raw){
+          const parsed = JSON.parse(raw);
+          if(Array.isArray(parsed)) arr = parsed;
+        }
+
+        // 若本地沒有細節，但有一個 flag 表示曾經通過（純本機使用，不再依賴後端回傳）
+        if(!arr){
+          const fromFlag = localStorage.getItem('mission1_from_sheet');
+          if(fromFlag === 'pass'){
+            arr = requiredIdxs.slice();
+          }
+        }
+
+        if(!arr) return;
+
+        arr.forEach(idx=>{
+          const idxStr = String(idx);
+          passedSet.add(idxStr);
+          // 用 markSpotDone 補畫面，但不重複寫入 localStorage
+          markSpotDone(idxStr, true);
+        });
+      }catch(e){
+        console.error('loadProgress error', e);
+      }
+    }
+
+    function updateNextButtonLock(){
+      if(!nextBtn) return;
+      const allDone = requiredIdxs.every(idx => passedSet.has(idx));
+      mission1AllDone = allDone;
+
+      if(allDone){
+        nextBtn.classList.remove('locked');
+        nextBtn.removeAttribute('aria-disabled');
+        nextBtn.style.pointerEvents = 'auto';
+        nextBtn.style.opacity = '1';
+        nextBtn.textContent = '繼續冒險 ➜';
+      }else{
+        nextBtn.classList.add('locked');
+        nextBtn.setAttribute('aria-disabled','true');
+        nextBtn.style.pointerEvents = 'none';
+        nextBtn.style.opacity = '.5';
+        nextBtn.textContent = '請先完成所有吉祥物';
+      }
+    }
+
+    function removeAnchorListeners(){
+      allAnchors.forEach(a=>{
+        a.removeEventListener('targetFound', onTargetFound);
+        a.removeEventListener('targetLost', onTargetLost);
+      });
+    }
+
+    function onTargetFound(){
+      scanStatus.textContent = '已辨識到「' + (currentTargetName || '目標') + '」！';
+      markSpotDone(currentIdx);
+      setTimeout(()=>{ stopScanner(); }, 700);
+    }
+
+    function onTargetLost(){
+      if(!isScanning) return;
+      scanStatus.textContent = '目標遺失，請再對準「' + (currentTargetName || '目標') + '」。';
+    }
+
+    // 掃描成功 → 按鈕加 passed + locked，並在 hotspot 上蓋 pass.png
+    // skipSave 用來在載入歷史紀錄時避免重複寫入 localStorage
+    function markSpotDone(idx, skipSave){
+      if(idx == null) return;
+      const idxStr = String(idx);
+      const btn = document.querySelector('.hotspot a[data-idx="' + idxStr + '"]');
+      if(!btn) return;
+      btn.classList.add('passed','locked');
+
+      const host = btn.closest('.hotspot');
+      if(host){
+        let stamp = host.querySelector('.pass-stamp');
+        if(!stamp){
+          stamp = document.createElement('img');
+          stamp.className = 'pass-stamp';
+          stamp.src = '../icon/Universal/pass.png';
+          stamp.alt = '已通關';
+          host.appendChild(stamp);
+        }
+      }
+
+      passedSet.add(idxStr);
+      if(!skipSave){
+        saveProgress();
+      }
+      updateNextButtonLock();
+    }
+
+    function startScanner(targetName, idx, framePath){
+      const sys = arScene.systems['mindar-image-system'];
+      if(!sys || typeof sys.start !== 'function'){
+        scanStatus.textContent = 'AR 系統尚未準備完成，請稍後再試。';
+        return;
+      }
+
+      currentTargetName = targetName;
+      currentIdx = idx;
+
+      scanTitle.textContent = '請對準：' + targetName;
+      scanStatus.textContent = '正在啟動相機…';
+
+      if(framePath){
+        scanFrameImage.src = framePath;
+      }else{
+        scanFrameImage.removeAttribute('src');
+      }
+
+      scannerOverlay.classList.add('active');
+      isScanning = true;
+
+      removeAnchorListeners();
+      currentAnchor = document.getElementById('anchor-' + idx);
+      if(currentAnchor){
+        currentAnchor.addEventListener('targetFound', onTargetFound);
+        currentAnchor.addEventListener('targetLost', onTargetLost);
+      }
+
+      try{
+        sys.start();
+        scanStatus.textContent = '請對準「' + targetName + '」的吉祥物圖樣';
+      }catch(e){
+        console.error(e);
+        scanStatus.textContent = '相機啟動失敗，請確認權限或改用其他瀏覽器。';
+        isScanning = false;
+        scannerOverlay.classList.remove('active');
+      }
+    }
+
+    function stopScanner(){
+      const sys = arScene.systems['mindar-image-system'];
+      if(sys && typeof sys.stop === 'function'){
+        try{ sys.stop(); }catch(e){ console.error(e); }
+      }
+      isScanning = false;
+      scannerOverlay.classList.remove('active');
+    }
+
+    scanClose.addEventListener('click', ()=>{ stopScanner(); });
+
+    // 熱點按鈕 → 同頁啟動 AR 掃描（若已通過則鎖定）
+    hotButtons.forEach(a=>{
+      a.addEventListener('click', (e)=>{
+        e.preventDefault();
+
+        if(a.classList.contains('locked')){
+          scanStatus.textContent = '已完成認證，無需重複掃描。';
+          return;
+        }
+
+        const target = a.dataset.target || '';
+        const frame  = a.dataset.frame  || '';
+        const idx    = Number(a.dataset.idx);
+
+        if(!target || Number.isNaN(idx)){
+          alert('此按鈕尚未設定有效的 target / idx');
+          return;
+        }
+
+        const framePath = '../icon/png/' + frame;
+        startScanner(target, idx, framePath);
+      });
+    });
+
+    // 等整個頁面載入完成後，綁定「繼續冒險」按鈕並恢復紀錄
+    window.addEventListener('load', ()=>{
+      nextBtn = document.getElementById('btnNext');
+      loadProgress();
+      updateNextButtonLock();
+
+      if(nextBtn){
+        nextBtn.addEventListener('click', async (e)=>{
+          // 若尚未全數完成，阻擋前往下一頁（雙重保險）
+          if(!mission1AllDone){
+            e.preventDefault();
+            return;
+          }
+
+          e.preventDefault(); // 先攔截，完成寫入後再導頁
+
+          const sid  = localStorage.getItem('player_sid')  || localStorage.getItem('home_sid')  || '';
+          const name = localStorage.getItem('player_name') || localStorage.getItem('home_name') || '';
+          const email = localStorage.getItem('player_email') || localStorage.getItem('home_mail') || '';
+
+          // 簡單做一點 UI 回饋
+          nextBtn.textContent = '同步中…';
+          nextBtn.style.opacity = '.7';
+          nextBtn.style.pointerEvents = 'none';
+
+          // 在「關卡結束（下一頁觸發）」時，寫入一筆 mission1 通關紀錄
+          logEventToSheet({
+            action: 'mission1_pass',
+            page: 'mission1',
+            event: 'to_next',
+            sid,
+            name,
+            email
+          });
+
+          // 標記本機已通過（不依賴後端回傳）
+          localStorage.setItem('mission1_from_sheet', 'pass');
+
+          // 稍微停一下，當作緩衝，再進入下一關
+          const targetHref = nextBtn.getAttribute('href') || '../index.html';
+          setTimeout(()=>{
+            location.href = targetHref;
+          }, 800);
+        });
+      }
+    });
+
+    // ===== 顯示學號 / 姓名（從 localStorage） =====
+    (function(){
+      const sid  = localStorage.getItem('player_sid')  || localStorage.getItem('home_sid')  || '';
+      const name = localStorage.getItem('player_name') || localStorage.getItem('home_name') || '';
+      const sidEl  = document.getElementById('playerSid');
+      const nameEl = document.getElementById('playerName');
+      if(sidEl){
+        sidEl.textContent = '學號：' + (sid || '未登入');
+      }
+      if(nameEl){
+        nameEl.textContent = '姓名：' + (name || '未登入');
+      }
+    })();
+  </script>
+
+  <!-- ===== 底部導航按鈕 ===== -->
+  <div class="nav-buttons">
+    <!-- 上一頁：返回首頁 -->
+    <a href="../index.html" id="btnBack" style="
+      flex:1;
+      text-align:center;
+      padding:14px 0;
+      background:#e2e8f0;
+      border-radius:12px;
+      font-size:16px;
+      font-weight:700;
+      text-decoration:none;
+      color:#1e293b;
+      box-shadow:0 4px 10px rgba(0,0,0,.08);
+    ">
+      ⬅ 上一頁
+    </a>
+
+    <!-- 下一頁：前往彩蛋 missionXX.html（需全部 AR 點完成才解鎖） -->
+    <a href="../pages/missionXX.html" id="btnNext" style="
+      flex:1;
+      text-align:center;
+      padding:14px 0;
+      background:#2563eb;
+      border-radius:12px;
+      font-size:16px;
+      font-weight:700;
+      text-decoration:none;
+      color:white;
+      box-shadow:0 4px 10px rgba(0,0,0,.15);
+    ">
+      繼續冒險 ➜
+    </a>
+  </div>
+</body>
+</html>

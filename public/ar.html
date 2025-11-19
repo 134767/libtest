@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"/>
+  <title>AR 掃描認證</title>
+  <link rel="stylesheet" href="./style.css"/>
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.3/dist/mindar-image-aframe.prod.js"></script>
+</head>
+<body>
+  <img id="loading" class="loading" alt="loading" src="./icon/Universal/loading.png"/>
+
+  <button id="btn-start" class="floating-btn">開始掃描</button>
+  <a class="floating-link" href="./index.html">← 返回</a>
+
+  <div id="overlay" class="overlay">
+    <img id="overlay-img" alt="overlay" />
+    <div id="overlay-text"></div>
+  </div>
+
+  <a-scene id="scene"
+    mindar-image="imageTargetSrc: ./targets.mind; filterMinCF:0.1; filterBeta: 0.001"
+    embedded
+    color-space="sRGB"
+    renderer="colorManagement: true, physicallyCorrectLights: true, precision: medium"
+    vr-mode-ui="enabled: false"
+    device-orientation-permission-ui="enabled: false">
+
+    <a-camera look-controls="enabled:false"></a-camera>
+
+    <!-- 單一 target，使用 JS 動態綁定事件 -->
+    <a-entity id="t0" mindar-image-target="targetIndex: 0"></a-entity>
+    <a-entity id="t1" mindar-image-target="targetIndex: 1"></a-entity>
+    <a-entity id="t2" mindar-image-target="targetIndex: 2"></a-entity>
+    <a-entity id="t3" mindar-image-target="targetIndex: 3"></a-entity>
+    <a-entity id="t4" mindar-image-target="targetIndex: 4"></a-entity>
+    <a-entity id="t5" mindar-image-target="targetIndex: 5"></a-entity>
+    <a-entity id="t6" mindar-image-target="targetIndex: 6"></a-entity>
+    <a-entity id="t7" mindar-image-target="targetIndex: 7"></a-entity>
+    <a-entity id="t8" mindar-image-target="targetIndex: 8"></a-entity>
+    <a-entity id="t9" mindar-image-target="targetIndex: 9"></a-entity>
+    <a-entity id="t10" mindar-image-target="targetIndex: 10"></a-entity>
+    <a-entity id="t11" mindar-image-target="targetIndex: 11"></a-entity>
+  </a-scene>
+
+  <script src="./app.js"></script>
+  <script>
+    // 啟動
+    const btn = document.getElementById("btn-start");
+    const loading = document.getElementById("loading");
+    const overlay = document.getElementById("overlay");
+    const overlayImg = document.getElementById("overlay-img");
+    const overlayText = document.getElementById("overlay-text");
+
+    btn.addEventListener("click", () => {
+      btn.classList.add("hidden");
+      loading.classList.remove("hidden");
+      const sceneEl = document.querySelector("#scene");
+      // MindAR 需等使用者互動才啟動鏡頭，在這裡觸發即可
+      sceneEl.systems["mindar-image-system"].start();
+    });
+
+    // 綁定 12 個 target 的 found/lose
+    const order = window.ACADEMY_ORDER; // 12 個代碼順序
+    const entities = [...Array(12)].map((_,i)=>document.getElementById("t"+i));
+
+    entities.forEach((el, i) => {
+      el.addEventListener("targetFound", async () => {
+        loading.classList.add("hidden");
+        const code = order[i];           // 例如 "01文"
+        const meta = window.ACADEMIES[code];
+        overlayImg.src = meta.png;       // 對應透明框
+        overlayText.textContent = meta.label;
+        overlay.classList.add("visible");
+
+        // 取得任務內容並記錄 log
+        try {
+          const data = await window.apiGetTask(code);
+          console.log("task:", data);
+          await window.apiLog({
+            userId: window.sessionId(),
+            target: code,
+            status: "FOUND",
+            key: Date.now().toString(36)
+          });
+        } catch (e) {
+          console.warn(e);
+        }
+      });
+      el.addEventListener("targetLost", () => {
+        overlay.classList.remove("visible");
+      });
+    });
+  </script>
+</body>
+</html>

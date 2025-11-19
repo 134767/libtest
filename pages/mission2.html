@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<title>任務二｜SB MAP（認證）</title>
+<link rel="stylesheet" href="../assets/css/style.css"/>
+<style>
+  .player-info{
+    margin-top:6px;
+    font-size:13px;
+    color:#64748b;
+    display:flex;
+    flex-wrap:wrap;
+    gap:12px;
+  }
+  .player-info span{
+    white-space:nowrap;
+  }
+
+  /* Loading 緩衝畫面 */
+  .loading-overlay{
+    position:fixed;
+    inset:0;
+    background:#ffffff;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index:9999;
+  }
+  .loading-overlay.active{
+    display:flex;
+  }
+  .loading-box{
+    text-align:center;
+  }
+  .loading-box img{
+    width:120px;
+    max-width:40vw;
+    height:auto;
+    display:block;
+    margin:0 auto 12px;
+  }
+  .loading-box p{
+    margin:0;
+    font-size:16px;
+    color:#374151;
+  }
+</style>
+<script type="module">
+  import { initProgress } from "../assets/js/app.js";
+  window.addEventListener("DOMContentLoaded", () => initProgress("任務二"));
+</script>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>任務二｜SB MAP（認證）</h1>
+      <div class="player-info">
+        <span id="playerSid">學號：——</span>
+        <span id="playerName">姓名：——</span>
+      </div>
+    </header>
+
+    <div class="progress-block">
+      <div class="pbar-labels" id="pbar-labels"></div>
+      <div class="pbar"><span id="pbar-fill"></span></div>
+    </div>
+
+    <main class="card">
+      <h2>第二大項｜SB MAP 認證</h2>
+      <p>依地圖提示完成各學院的 AR 認證。點下方任一按鈕進入掃描器。</p>
+
+      <div class="button-grid">
+        <button class="button" data-target="12織" data-frame="12織.png" data-idx="11">12織</button>
+        <button class="button" data-target="06理" data-frame="06理.png" data-idx="5">06理</button>
+        <button class="button" data-target="10社" data-frame="10社.png" data-idx="9">10社</button>
+        <button class="button" data-target="11管" data-frame="11管.png" data-idx="10">11管</button>
+        <button class="button" data-target="03傳" data-frame="03傳.png" data-idx="2">03傳</button>
+        <button class="button" data-target="09法" data-frame="09法.png" data-idx="8">09法</button>
+      </div>
+
+      <div class="button-row" style="margin-top:16px">
+        <a class="button" href="mission1.html">回任務一</a>
+        <!-- 這裡加上 id，方便掛載事件 -->
+        <a class="button" href="mission3.html" id="btnToMission3">去任務三</a>
+      </div>
+    </main>
+
+    <div class="footer">© 2025 Fu Jen Library · FJU Freshman Adventure</div>
+  </div>
+
+  <!-- Loading 緩衝畫面 -->
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="loading-box">
+      <img src="../icon/Universal/loading.png" alt="載入中"/>
+      <p>加載中，請稍後…</p>
+    </div>
+  </div>
+
+  <script>
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbysBKsv9n7471wj3sAWFpa1MI85JesJJJwhhopzWwIt4GUAa-ITQKWITqEhJcdMMi3nXA/exec";
+
+    // 所有按鈕統一導向共用的 scanner.html
+    document.querySelectorAll('.button-grid .button').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const target = btn.dataset.target;
+        const frame  = btn.dataset.frame;
+        const idx    = btn.dataset.idx;
+        const url = new URL('../scanner.html', location.href);
+        url.searchParams.set('target', target);
+        url.searchParams.set('frame', `icon/png/${frame}`);
+        url.searchParams.set('idx', idx);
+        url.searchParams.set('step', '2');     // 任務二
+        // 如需微調圖示大小，可追加：url.searchParams.set('scale','0.9');
+        location.assign(url.toString());
+      });
+    });
+
+    // 顯示學號 / 姓名
+    (function(){
+      const sid  = localStorage.getItem('player_sid')  || localStorage.getItem('home_sid')  || '';
+      const name = localStorage.getItem('player_name') || localStorage.getItem('home_name') || '';
+      const sidEl  = document.getElementById('playerSid');
+      const nameEl = document.getElementById('playerName');
+      if(sidEl){
+        sidEl.textContent = '學號：' + (sid || '未登入');
+      }
+      if(nameEl){
+        nameEl.textContent = '姓名：' + (name || '未登入');
+      }
+    })();
+
+    // 顯示 Loading 畫面
+    function showLoadingOverlay(){
+      const el = document.getElementById('loadingOverlay');
+      if(el) el.classList.add('active');
+    }
+
+    // 任務二通關 → 回傳 mission2 = pass
+    async function notifyMission2PassToServer(){
+      const sid  = localStorage.getItem('player_sid')  || localStorage.getItem('home_sid')  || '';
+      const name = localStorage.getItem('player_name') || localStorage.getItem('home_name') || '';
+      if (!sid || !name) return;
+
+      try{
+        await fetch(GAS_URL, {
+          method: 'POST',
+          mode: 'no-cors', // 簡單請求，不讀回應，避免 CORS
+          body: JSON.stringify({
+            action: 'updateProgress',
+            sid,
+            name,
+            mission: 'mission2',
+            value: 'pass'
+          })
+        });
+
+        // 視為已送出，記一個旗標
+        localStorage.setItem('mission2_from_sheet', 'pass');
+      }catch(e){
+        console.error('notifyMission2PassToServer error', e);
+      }
+    }
+
+    // 「去任務三」：顯示 loading → 打 mission2=pass → 跳轉
+    (function(){
+      const btnToMission3 = document.getElementById('btnToMission3');
+      if(!btnToMission3) return;
+
+      btnToMission3.addEventListener('click', async (e)=>{
+        e.preventDefault();
+        showLoadingOverlay();
+        await notifyMission2PassToServer();
+        // 關卡結束才打 API，之後再前往任務三
+        location.href = 'mission3.html';
+      });
+    })();
+  </script>
+</body>
+</html>

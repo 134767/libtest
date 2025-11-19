@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>隱藏彩蛋篇｜圖書館無限城冒險</title>
+  <meta name="theme-color" content="#ffffff" />
+  <style>
+    :root{
+      --bg:#f8fafc;
+      --text:#0f172a;
+      --muted:#64748b;
+      --panel:#ffffff;
+      --line:#e5e7eb;
+      --brand:#2563eb;
+      --brand-2:#22c55e;
+      --radius:16px;
+      --shadow:0 10px 25px rgba(15,23,42,.08);
+      --ring:rgba(37,99,235,.25);
+      --vh:1vh;
+    }
+    *{box-sizing:border-box;}
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica Neue,Arial;
+      color:var(--text);
+      background:var(--bg);
+      display:grid;
+      grid-template-rows:auto auto 1fr auto;
+      min-height:100vh;
+    }
+    header{padding:20px 16px 4px;}
+    header h1{
+      margin:0;
+      font-size:clamp(20px,4.2vw,28px);
+      font-weight:800;
+    }
+    .player-info{
+      margin-top:6px;
+      font-size:13px;
+      color:var(--muted);
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+    }
+    .player-info span{
+      white-space:nowrap;
+    }
+    .progress-wrap{padding:8px 16px 14px;}
+    .steps{
+      display:grid;
+      grid-template-columns:repeat(6,1fr);
+      gap:8px;
+      margin-bottom:10px;
+    }
+    .step{
+      display:grid;
+      place-items:center;
+      gap:6px;
+      color:var(--muted);
+      font-size:11px;
+    }
+    .step .dot{
+      width:28px;
+      height:28px;
+      border-radius:999px;
+      display:grid;
+      place-items:center;
+      font-weight:800;
+      background:#fff;
+      border:1px solid var(--line);
+      box-shadow:0 0 0 0 var(--ring);
+      transition:.18s;
+    }
+    .step.active .dot{
+      background:linear-gradient(180deg,var(--brand),#60a5fa);
+      color:#fff;
+      border-color:transparent;
+      box-shadow:0 0 0 6px var(--ring);
+    }
+    .bar{
+      width:100%;
+      height:8px;
+      background:#e5e7eb;
+      border-radius:999px;
+      overflow:hidden;
+    }
+    .bar>i{
+      display:block;
+      height:100%;
+      width:var(--p,0%);
+      background:linear-gradient(90deg,var(--brand),var(--brand-2));
+      transition:width .35s ease;
+    }
+    main{
+      padding:16px;
+      display:grid;
+      gap:20px;
+    }
+    section{
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:20px;
+    }
+
+    .egg-text{
+      font-size:15px;
+      line-height:1.8;
+      margin-bottom:12px;
+    }
+    .egg-text strong{
+      font-weight:800;
+    }
+    .egg-image-wrap{
+      margin:20px auto;
+      max-width:420px;
+      text-align:center;
+    }
+    .egg-image-wrap img{
+      width:100%;
+      height:auto;
+      border-radius:16px;
+      box-shadow:0 8px 20px rgba(0,0,0,.18);
+    }
+    .egg-note{
+      font-size:13px;
+      color:var(--muted);
+      margin-top:8px;
+    }
+
+    /* 底部導覽按鈕容器 */
+    .nav-buttons{
+      margin:0 16px 16px;
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>隱藏彩蛋篇</h1>
+    <div class="player-info">
+      <span id="playerSid">學號：——</span>
+      <span id="playerName">姓名：——</span>
+    </div>
+  </header>
+
+  <section class="progress-wrap" aria-label="任務進度">
+    <div class="steps" id="steps">
+      <div class="step" data-step="1"><div class="dot">1</div>首頁</div>
+      <div class="step active" data-step="2"><div class="dot">2</div>大地遊戲</div>
+      <div class="step" data-step="3"><div class="dot">3</div>任務二</div>
+      <div class="step" data-step="4"><div class="dot">4</div>任務三</div>
+      <div class="step" data-step="5"><div class="dot">5</div>工商</div>
+      <div class="step" data-step="6"><div class="dot">6</div>完成</div>
+    </div>
+    <div class="bar"><i id="bar"></i></div>
+  </section>
+
+  <main>
+    <section>
+      <h2>？？?</h2>
+      <h2>沒想到你們……</h2>
+      <p class="egg-text">
+        <strong>「...還以為是原本的梗圖嗎?...」</strong>
+      </p>
+      <p class="egg-text">
+        <strong>「實在太小看我了....哼哼.....」</strong>
+      </p>
+
+      <div class="egg-image-wrap">
+        <!-- 圖片路徑：libtest2\icon\Universal\Easter Egg.jpg -->
+        <img src="../icon/Universal/Easter%20Egg.jpg" alt="Easter Egg" />
+        <div class="egg-note">製作者的臉就如同梗圖一樣 (?)</div>
+      </div>
+      </p>
+      <p class="egg-text">
+        「後續的遊戲內容製作者會陸續更新」
+      </p>
+      <p class="egg-text">
+        「若有想要提供意見或是出現異常，歡迎告知」
+      </p>
+      <p class="egg-text">
+        <strong>「感謝支持!!」</strong>
+      </p>
+    </section>
+  </main>
+
+  <script>
+    // ===== 進度條（這裡一樣把目前視為第 2 步：任務一 / 彩蛋） =====
+    const TOTAL_STEPS = 6, CURRENT_STEP = 1;
+    const steps = document.querySelectorAll('.step');
+    const bar = document.getElementById('bar');
+    steps.forEach((el,i)=>{
+      el.classList.remove('active');
+      if(i === CURRENT_STEP) el.classList.add('active');
+    });
+    const percent = Math.round((CURRENT_STEP/(TOTAL_STEPS-1))*100);
+    bar.style.setProperty('--p', percent+'%');
+    bar.parentElement.setAttribute('aria-valuenow', String(percent));
+
+    // ===== 100vh 修正（手機） =====
+    function setVh(){
+      document.documentElement.style.setProperty('--vh', window.innerHeight * 0.01 + 'px');
+    }
+    setVh();
+    window.addEventListener('resize', setVh);
+
+    // ===== 顯示學號 / 姓名 =====
+    (function(){
+      const sid  = localStorage.getItem('player_sid')  || localStorage.getItem('home_sid')  || '';
+      const name = localStorage.getItem('player_name') || localStorage.getItem('home_name') || '';
+      const sidEl  = document.getElementById('playerSid');
+      const nameEl = document.getElementById('playerName');
+      if(sidEl){
+        sidEl.textContent = '學號：' + (sid || '未登入');
+      }
+      if(nameEl){
+        nameEl.textContent = '姓名：' + (name || '未登入');
+      }
+    })();
+  </script>
+
+  <!-- ===== 底部導航按鈕 ===== -->
+  <div class="nav-buttons">
+    <!-- 回到任務一（保留 localStorage 通關紀錄） -->
+    <a href="./mission1.html" style="
+      flex:1;
+      text-align:center;
+      padding:14px 0;
+      background:#e2e8f0;
+      border-radius:12px;
+      font-size:16px;
+      font-weight:700;
+      text-decoration:none;
+      color:#1e293b;
+      box-shadow:0 4px 10px rgba(0,0,0,.08);
+    ">
+      ⬅ 回任務一
+    </a>
+
+    <!-- 回首頁 -->
+    <a href="../index.html" style="
+      flex:1;
+      text-align:center;
+      padding:14px 0;
+      background:#2563eb;
+      border-radius:12px;
+      font-size:16px;
+      font-weight:700;
+      text-decoration:none;
+      color:white;
+      box-shadow:0 4px 10px rgba(0,0,0,.15);
+    ">
+      回首頁 🏠
+    </a>
+  </div>
+</body>
+</html>
